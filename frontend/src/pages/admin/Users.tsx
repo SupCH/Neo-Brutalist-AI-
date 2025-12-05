@@ -97,15 +97,18 @@ function Users() {
                                         <div className="user-email">{user.email}</div>
                                     </td>
                                     <td>
-                                        <select
-                                            className={`role-select ${ROLE_COLORS[user.role]}`}
-                                            value={user.role}
-                                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                        >
-                                            <option value="USER">普通用户</option>
-                                            <option value="ADMIN">管理员</option>
-                                            <option value="SUPER_ADMIN">超级管理员</option>
-                                        </select>
+                                        {user.role === 'SUPER_ADMIN' ? (
+                                            <span className={`role-badge ${ROLE_COLORS[user.role]}`}>超级管理员</span>
+                                        ) : (
+                                            <select
+                                                className={`role-select ${ROLE_COLORS[user.role]}`}
+                                                value={user.role}
+                                                onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                            >
+                                                <option value="USER">普通用户</option>
+                                                <option value="ADMIN">管理员</option>
+                                            </select>
+                                        )}
                                     </td>
                                     <td className="count-cell">{user._count.posts}</td>
                                     <td className="count-cell">{user._count.comments}</td>
@@ -113,12 +116,14 @@ function Users() {
                                         {new Date(user.createdAt).toLocaleDateString('en-CA')}
                                     </td>
                                     <td>
-                                        <button
-                                            className="action-btn delete"
-                                            onClick={() => handleDelete(user.id)}
-                                        >
-                                            删除
-                                        </button>
+                                        {user.role !== 'SUPER_ADMIN' && (
+                                            <button
+                                                className="action-btn delete"
+                                                onClick={() => handleDelete(user.id)}
+                                            >
+                                                删除
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
