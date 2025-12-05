@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { getUserProfile, updateProfile, uploadAvatar, uploadProfileBg, getCurrentUser, changePassword, logout } from '../services/api'
+import { getUserProfile, updateProfile, uploadAvatar, uploadProfileBg, getCurrentUser, changePassword, changeEmail, logout } from '../services/api'
 import NotFound from './NotFound'
 import './UserProfile.css'
 
@@ -61,6 +61,13 @@ function UserProfile() {
     const [confirmPassword, setConfirmPassword] = useState('')
     const [passwordError, setPasswordError] = useState('')
     const [passwordSaving, setPasswordSaving] = useState(false)
+
+    // 邮箱修改状态
+    const [showEmailModal, setShowEmailModal] = useState(false)
+    const [newEmail, setNewEmail] = useState('')
+    const [emailPassword, setEmailPassword] = useState('')
+    const [emailError, setEmailError] = useState('')
+    const [emailSaving, setEmailSaving] = useState(false)
 
     const avatarInputRef = useRef<HTMLInputElement>(null)
     const bgInputRef = useRef<HTMLInputElement>(null)
@@ -165,6 +172,36 @@ function UserProfile() {
             setPasswordError(errorMessage)
         } finally {
             setPasswordSaving(false)
+        }
+    }
+
+    const handleChangeEmail = async () => {
+        setEmailError('')
+
+        if (!newEmail || !emailPassword) {
+            setEmailError('请填写所有字段')
+            return
+        }
+
+        if (!/\S+@\S+\.\S+/.test(newEmail)) {
+            setEmailError('请输入有效的邮箱地址')
+            return
+        }
+
+        setEmailSaving(true)
+        try {
+            await changeEmail(newEmail, emailPassword)
+            setShowEmailModal(false)
+            setNewEmail('')
+            setEmailPassword('')
+            alert('邮箱修改成功！')
+            // 更新本地用户信息显示（如果有需要）
+        } catch (error: any) {
+            console.error('邮箱修改失败:', error)
+            const errorMessage = error.response?.data?.error || error.message || '服务暂不可用'
+            setEmailError(errorMessage)
+        } finally {
+            setEmailSaving(false)
         }
     }
 
@@ -309,6 +346,13 @@ function UserProfile() {
                                     onClick={() => setShowPasswordModal(true)}
                                 >
                                     修改密码
+                                </button>
+                                <button
+                                    className="change-email-btn" // Reusing styling class if possible or add new
+                                    style={{ marginLeft: '10px' }} // Quick style or add to CSS
+                                    onClick={() => setShowEmailModal(true)}
+                                >
+                                    更改邮箱
                                 </button>
                             </div>
                         )}
@@ -471,6 +515,70 @@ function UserProfile() {
                                         setNewPassword('')
                                         setConfirmPassword('')
                                         setPasswordError('')
+                                    }}
+                                >
+                                    取消
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Email Change Modal */}
+            {showEmailModal && (
+                <div className="password-modal-overlay" onClick={() => setShowEmailModal(false)}>
+                    <div className="password-modal" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="modal-title">
+                            <span className="title-bracket">[</span>
+                            更改邮箱
+                            <span className="title-bracket">]</span>
+                        </h3>
+
+                        {emailError && (
+                            <div className="password-error">
+                                // ERROR: {emailError}
+                            </div>
+                        )}
+
+                        <div className="password-form">
+                            <div className="form-group">
+                                <label className="form-label">新邮箱</label>
+                                <input
+                                    type="email"
+                                    className="form-input"
+                                    value={newEmail}
+                                    onChange={(e) => setNewEmail(e.target.value)}
+                                    placeholder="请输入新邮箱"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">当前密码</label>
+                                <input
+                                    type="password"
+                                    className="form-input"
+                                    value={emailPassword}
+                                    onChange={(e) => setEmailPassword(e.target.value)}
+                                    placeholder="请输入密码以确认"
+                                />
+                            </div>
+
+                            <div className="modal-actions">
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={handleChangeEmail}
+                                    disabled={emailSaving}
+                                >
+                                    {emailSaving ? '修改中...' : '确认修改'}
+                                </button>
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => {
+                                        setShowEmailModal(false)
+                                        setNewEmail('')
+                                        setEmailPassword('')
+                                        setEmailError('')
                                     }}
                                 >
                                     取消

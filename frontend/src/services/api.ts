@@ -156,6 +156,13 @@ export async function changePassword(oldPassword: string, newPassword: string, c
     })
 }
 
+export async function changeEmail(email: string, password: string) {
+    return request<{ success: boolean; message: string; email: string }>('/user/email', {
+        method: 'PUT',
+        body: JSON.stringify({ email, password }),
+    })
+}
+
 export function isAuthenticated() {
     return !!localStorage.getItem('token')
 }

@@ -84,6 +84,7 @@ router.put('/user/profile', authMiddleware, updateProfileValidation, userControl
 router.post('/user/avatar', authMiddleware, upload.single('file'), userController.uploadAvatar)
 router.post('/user/background', authMiddleware, upload.single('file'), userController.uploadProfileBg)
 router.put('/user/password', authMiddleware, changePasswordValidation, userController.changePassword)
+router.put('/user/email', authMiddleware, userController.changeEmail)
 
 // 管理接口（需要 ADMIN 或 SUPER_ADMIN）
 router.get('/admin/stats', authMiddleware, requireAdmin, adminController.getStats)

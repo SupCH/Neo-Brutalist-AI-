@@ -303,6 +303,61 @@ export const userController = {
                 details: '密码修改服务暂不可用'
             })
         }
+    },
+
+    // 修改邮箱 (需登录)
+    async changeEmail(req: AuthRequest, res: Response) {
+        try {
+            const { email, password } = req.body
+
+            if (!email || !/\S+@\S+\.\S+/.test(email)) {
+                return res.status(400).json({ error: '请输入有效的邮箱地址' })
+            }
+
+            if (!password) {
+                return res.status(400).json({ error: '请输入密码以确认修改' })
+            }
+
+            // 获取当前用户
+            const user = await prisma.user.findUnique({
+                where: { id: req.userId }
+            })
+
+            if (!user) {
+                return res.status(404).json({ error: '用户不存在' })
+            }
+
+            // 验证密码
+            const isValidPassword = await bcrypt.compare(password, user.password)
+            if (!isValidPassword) {
+                return res.status(401).json({ error: '密码错误，无法修改邮箱' })
+            }
+
+            // 检查邮箱是否已被使用
+            const existingUser = await prisma.user.findUnique({
+                where: { email }
+            })
+
+            if (existingUser && existingUser.id !== req.userId) {
+                return res.status(400).json({ error: '该邮箱已被其他用户注册' })
+            }
+
+            // 更新邮箱
+            await prisma.user.update({
+                where: { id: req.userId },
+                data: { email }
+            })
+
+            res.json({
+                success: true,
+                message: '邮箱修改成功',
+                email
+            })
+
+        } catch (error) {
+            console.error('修改邮箱失败:', error)
+            res.status(500).json({ error: '修改邮箱服务暂不可用' })
+        }
     }
 }
 
