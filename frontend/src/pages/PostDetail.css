@@ -374,3 +374,18 @@
     background-color: var(--alert-red);
     color: #fff;
 }
+
+/* Deleted Comment */
+.comment-item.deleted {
+    background-color: #f5f5f5;
+    border-color: #ddd;
+    opacity: 0.7;
+}
+
+.deleted-message {
+    margin: 0;
+    padding: 0.5rem 0;
+    font-style: italic;
+    color: #999;
+    font-family: var(--font-mono);
+}

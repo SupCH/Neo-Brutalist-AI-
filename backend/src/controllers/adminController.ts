@@ -150,16 +150,17 @@ export const adminController = {
         }
     },
 
-    // 删除文章
+    // 删除文章（软删除）
     async deletePost(req: AuthRequest, res: Response) {
         try {
             const id = parseInt(req.params.id)
 
-            await prisma.post.delete({
-                where: { id }
+            await prisma.post.update({
+                where: { id },
+                data: { isDeleted: true }
             })
 
-            res.json({ success: true })
+            res.json({ success: true, message: '文章已删除' })
         } catch (error) {
             console.error('删除文章失败:', error)
             res.status(500).json({ error: '删除文章失败' })

@@ -38,6 +38,7 @@ model Post {
   coverImage String?
   published  Boolean   @default(false)
   isPublic   Boolean   @default(true)   // 是否公开，公开文章所有人可见
+  isDeleted  Boolean   @default(false)  // 软删除标记
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   
@@ -52,6 +53,7 @@ model Post {
 model Comment {
   id        Int      @id @default(autoincrement())
   content   String
+  isDeleted Boolean  @default(false)  // 软删除标记
   createdAt DateTime @default(now())
   
   postId    Int

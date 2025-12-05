@@ -29,12 +29,13 @@ interface PostDetailData {
     comments: Array<{
         id: number
         content: string
+        isDeleted?: boolean
         createdAt: string
         author: {
             id: number
             name: string
             avatar?: string
-        }
+        } | null
     }>
 }
 
@@ -198,46 +199,52 @@ function PostDetail() {
                             <p className="no-comments">// 暂无评论，成为第一个发言者</p>
                         ) : (
                             post.comments.map(comment => (
-                                <div key={comment.id} className="comment-item">
-                                    <div className="comment-header">
-                                        {comment.author ? (
-                                            <Link to={`/user/${comment.author.id}`} className="comment-author">
-                                                {comment.author.name} <span className="uid-badge">UID:{comment.author.id}</span>
-                                            </Link>
-                                        ) : (
-                                            <span className="comment-author deleted-user">已删除用户</span>
-                                        )}
-                                        <span className="comment-date">
-                                            {new Date(comment.createdAt).toLocaleDateString('en-CA')}
-                                        </span>
-                                        {/* 显示删除按钮：评论作者本人 或 超级管理员 */}
-                                        {isAuthenticated() && (() => {
-                                            const currentUser = getCurrentUser()
-                                            const canDelete = currentUser && (
-                                                comment.author?.id === currentUser.userId ||
-                                                currentUser.role === 'SUPER_ADMIN'
-                                            )
-                                            return canDelete ? (
-                                                <button
-                                                    className="comment-delete-btn"
-                                                    onClick={async () => {
-                                                        if (!confirm('确定要删除这条评论吗？')) return
-                                                        try {
-                                                            await deleteOwnComment(comment.id)
-                                                            const data = await getPost(post.slug)
-                                                            setPost(data)
-                                                        } catch (error) {
-                                                            console.error('删除评论失败:', error)
-                                                            alert('删除评论失败')
-                                                        }
-                                                    }}
-                                                >
-                                                    删除
-                                                </button>
-                                            ) : null
-                                        })()}
-                                    </div>
-                                    <p className="comment-content">{comment.content}</p>
+                                <div key={comment.id} className={`comment-item ${comment.isDeleted ? 'deleted' : ''}`}>
+                                    {comment.isDeleted ? (
+                                        <p className="deleted-message">此评论已被删除</p>
+                                    ) : (
+                                        <>
+                                            <div className="comment-header">
+                                                {comment.author ? (
+                                                    <Link to={`/user/${comment.author.id}`} className="comment-author">
+                                                        {comment.author.name} <span className="uid-badge">UID:{comment.author.id}</span>
+                                                    </Link>
+                                                ) : (
+                                                    <span className="comment-author deleted-user">已注销用户</span>
+                                                )}
+                                                <span className="comment-date">
+                                                    {new Date(comment.createdAt).toLocaleDateString('en-CA')}
+                                                </span>
+                                                {/* 显示删除按钮：评论作者本人 或 超级管理员 */}
+                                                {isAuthenticated() && (() => {
+                                                    const currentUser = getCurrentUser()
+                                                    const canDelete = currentUser && (
+                                                        comment.author?.id === currentUser.userId ||
+                                                        currentUser.role === 'SUPER_ADMIN'
+                                                    )
+                                                    return canDelete ? (
+                                                        <button
+                                                            className="comment-delete-btn"
+                                                            onClick={async () => {
+                                                                if (!confirm('确定要删除这条评论吗？')) return
+                                                                try {
+                                                                    await deleteOwnComment(comment.id)
+                                                                    const data = await getPost(post.slug)
+                                                                    setPost(data)
+                                                                } catch (error) {
+                                                                    console.error('删除评论失败:', error)
+                                                                    alert('删除评论失败')
+                                                                }
+                                                            }}
+                                                        >
+                                                            删除
+                                                        </button>
+                                                    ) : null
+                                                })()}
+                                            </div>
+                                            <p className="comment-content">{comment.content}</p>
+                                        </>
+                                    )}
                                 </div>
                             ))
                         )}

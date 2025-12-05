@@ -79,7 +79,7 @@ export const commentController = {
         }
     },
 
-    // 删除评论（需要 ADMIN+ 权限，由路由层控制）
+    // 删除评论（软删除，需要 ADMIN+ 权限）
     async deleteComment(req: Request, res: Response) {
         try {
             const id = parseInt(req.params.id)
@@ -93,8 +93,9 @@ export const commentController = {
                 return res.status(404).json({ error: '评论不存在' })
             }
 
-            await prisma.comment.delete({
-                where: { id }
+            await prisma.comment.update({
+                where: { id },
+                data: { isDeleted: true }
             })
 
             res.json({ success: true, message: '评论已删除' })
@@ -141,8 +142,9 @@ export const commentController = {
                 return res.status(403).json({ error: '只能删除自己的评论' })
             }
 
-            await prisma.comment.delete({
-                where: { id }
+            await prisma.comment.update({
+                where: { id },
+                data: { isDeleted: true }
             })
 
             res.json({ success: true, message: '评论已删除' })
