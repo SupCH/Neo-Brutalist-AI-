@@ -1,19 +1,19 @@
-# Windows Server + FRP 内网穿透部署指南
+# Windows Server + FRP 内网穿透部署指�?
 
-本指南详细介绍如何使用 frp 将运行在 Windows 本地服务器上的博客发布到公网。
+本指南详细介绍如何使�?frp 将运行在 Windows 本地服务器上的博客发布到公网�?
 
 ## 📋 前提条件
 
-| 需要准备 | 说明 |
+| 需要准�?| 说明 |
 |---------|------|
-| **公网服务器** | 需要一台有公网 IP 的云服务器（阿里云/腾讯云/搬瓦工等），作为 frp 服务端 |
+| **公网服务�?* | 需要一台有公网 IP 的云服务器（阿里�?腾讯�?搬瓦工等），作为 frp 服务�?|
 | **Windows Server** | 你的本地服务器，运行博客 |
 | **域名（可选）** | 如果想用域名访问，需要购买域名并解析到公网服务器 |
 
-## 🌐 架构图
+## 🌐 架构�?
 
 ```
-用户访问 → 公网服务器(frps):80 → frp隧道 → Windows本地(frpc):3000 → 博客
+用户访问 �?公网服务�?frps):80 �?frp隧道 �?Windows本地(frpc):3000 �?博客
 ```
 
 ---
@@ -25,7 +25,7 @@
 SSH 登录到你的公网服务器（假设是 Linux）：
 
 ```bash
-# 下载 frp（检查最新版本：https://github.com/fatedier/frp/releases）
+# 下载 frp（检查最新版本：https://github.com/fatedier/frp/releases�?
 cd /opt
 wget https://github.com/fatedier/frp/releases/download/v0.52.3/frp_0.52.3_linux_amd64.tar.gz
 
@@ -41,25 +41,25 @@ cd frp
 nano frps.toml
 ```
 
-写入以下内容：
+写入以下内容�?
 
 ```toml
-# frps.toml - 服务端配置
+# frps.toml - 服务端配�?
 
 # 基础配置
 bindPort = 7000              # frp 服务端口（客户端连接用）
-vhostHTTPPort = 80           # HTTP 代理端口（用户访问用）
+vhostHTTPPort = 80           # HTTP 代理端口（用户访问用�?
 vhostHTTPSPort = 443         # HTTPS 代理端口（可选）
 
-# 认证配置（重要！防止他人恶意使用）
+# 认证配置（重要！防止他人恶意使用�?
 auth.method = "token"
-auth.token = "YourSuperSecretToken123"   # 改成你自己的密钥！
+auth.token = "YourSuperSecretToken123"   # 改成你自己的密钥�?
 
 # Dashboard（可选，方便查看连接状态）
 webServer.addr = "0.0.0.0"
 webServer.port = 7500
 webServer.user = "admin"
-webServer.password = "admin123"          # 改成你自己的密码！
+webServer.password = "admin123"          # 改成你自己的密码�?
 
 # 日志
 log.to = "/var/log/frps.log"
@@ -84,7 +84,7 @@ sudo firewall-cmd --permanent --add-port=7500/tcp
 sudo firewall-cmd --reload
 ```
 
-**重要**：同时在云服务器的安全组/防火墙策略中放行这些端口！
+**重要**：同时在云服务器的安全组/防火墙策略中放行这些端口�?
 
 ### 1.4 启动 frps
 
@@ -92,11 +92,11 @@ sudo firewall-cmd --reload
 # 测试运行
 ./frps -c frps.toml
 
-# 如果没问题，用 systemd 管理（推荐）
+# 如果没问题，�?systemd 管理（推荐）
 sudo nano /etc/systemd/system/frps.service
 ```
 
-写入：
+写入�?
 
 ```ini
 [Unit]
@@ -113,7 +113,7 @@ RestartSec=5s
 WantedBy=multi-user.target
 ```
 
-启动服务：
+启动服务�?
 
 ```bash
 sudo systemctl daemon-reload
@@ -124,22 +124,22 @@ sudo systemctl status frps
 
 ---
 
-## 第二部分：配置 Windows 本地服务器（frpc 客户端）
+## 第二部分：配�?Windows 本地服务器（frpc 客户端）
 
 ### 2.1 下载 frp
 
 1. 访问 https://github.com/fatedier/frp/releases
 2. 下载 `frp_0.52.3_windows_amd64.zip`
-3. 解压到 `C:\frp\`
+3. 解压�?`C:\frp\`
 
 ### 2.2 配置 frpc.toml
 
-在 `C:\frp\` 目录下创建 `frpc.toml` 文件：
+�?`C:\frp\` 目录下创�?`frpc.toml` 文件�?
 
 ```toml
-# frpc.toml - 客户端配置
+# frpc.toml - 客户端配�?
 
-# 连接服务端
+# 连接服务�?
 serverAddr = "你的公网服务器IP"    # 例如 "123.45.67.89"
 serverPort = 7000
 
@@ -152,7 +152,7 @@ log.to = "C:/frp/frpc.log"
 log.level = "info"
 
 # ========================================
-# 代理配置：博客网站
+# 代理配置：博客网�?
 # ========================================
 
 # 方式一：使用子域名访问（推荐，需要配置域名）
@@ -179,7 +179,7 @@ customDomains = ["api.yourdomain.com"]   # API 域名
 # remotePort = 8080                  # 公网服务器的 8080 端口
 ```
 
-### 2.3 启动 frpc（命令行测试）
+### 2.3 启动 frpc（命令行测试�?
 
 打开 PowerShell（管理员）：
 
@@ -188,18 +188,18 @@ cd C:\frp
 .\frpc.exe -c frpc.toml
 ```
 
-看到类似以下输出表示成功：
+看到类似以下输出表示成功�?
 ```
 [I] [control.go:XXX] [blog-web] start proxy success
 [I] [control.go:XXX] [blog-api] start proxy success
 ```
 
-### 2.4 将 frpc 注册为 Windows 服务（开机自启）
+### 2.4 �?frpc 注册�?Windows 服务（开机自启）
 
-使用 NSSM 工具：
+使用 NSSM 工具�?
 
 1. 下载 NSSM：https://nssm.cc/download
-2. 解压，将 `nssm.exe` 复制到 `C:\frp\`
+2. 解压，将 `nssm.exe` 复制�?`C:\frp\`
 3. 打开 PowerShell（管理员）：
 
 ```powershell
@@ -221,19 +221,19 @@ cd C:\frp
 
 ---
 
-## 第三部分：配置博客在 Windows 上运行
+## 第三部分：配置博客在 Windows 上运�?
 
 ### 3.1 修改前端 API 地址
 
-由于使用了 frp 代理，前端需要知道 API 的正确地址。
+由于使用�?frp 代理，前端需要知�?API 的正确地址�?
 
-编辑 `frontend/src/services/api.ts`：
+编辑 `frontend/src/services/api.ts`�?
 
 ```typescript
-// 生产环境使用相对路径或独立 API 域名
+// 生产环境使用相对路径或独�?API 域名
 const API_BASE = import.meta.env.PROD 
     ? 'https://api.yourdomain.com/api'   // 使用独立 API 域名
-    : '/api'                              // 开发环境
+    : '/api'                              // 开发环�?
 ```
 
 或者使用同域代理（推荐）：
@@ -251,13 +251,13 @@ npm run build
 
 ### 3.3 使用静态服务器托管前端
 
-安装 `serve`：
+安装 `serve`�?
 
 ```powershell
 npm install -g serve
 ```
 
-运行（端口 3000）：
+运行（端�?3000）：
 
 ```powershell
 cd E:\风格个人博客\frontend
@@ -288,13 +288,13 @@ pm2 start serve --name "blog-web" -- -s dist -l 3000
 # 保存进程列表
 pm2 save
 
-# 设置开机启动
+# 设置开机启�?
 pm2-startup install
 ```
 
 ---
 
-## 第四部分：域名配置（可选但推荐）
+## 第四部分：域名配置（可选但推荐�?
 
 ### 4.1 购买域名
 
@@ -302,17 +302,17 @@ pm2-startup install
 
 ### 4.2 DNS 解析
 
-将以下记录指向你的**公网服务器 IP**：
+将以下记录指向你�?*公网服务�?IP**�?
 
-| 主机记录 | 记录类型 | 记录值 |
+| 主机记录 | 记录类型 | 记录�?|
 |---------|---------|--------|
-| `blog` | A | 123.45.67.89（你的公网服务器IP） |
+| `blog` | A | 123.45.67.89（你的公网服务器IP�?|
 | `api` | A | 123.45.67.89 |
 | `@` | A | 123.45.67.89（如果用主域名） |
 
-### 4.3 单域名方案（使用 Nginx 反代）
+### 4.3 单域名方案（使用 Nginx 反代�?
 
-如果只想用一个域名，在**公网服务器**上配置 Nginx：
+如果只想用一个域名，�?*公网服务�?*上配�?Nginx�?
 
 ```nginx
 server {
@@ -337,9 +337,9 @@ server {
 
 ---
 
-## 第五部分：完整配置示例
+## 第五部分：完整配置示�?
 
-### 公网服务器 frps.toml
+### 公网服务�?frps.toml
 
 ```toml
 bindPort = 7000
@@ -372,19 +372,19 @@ customDomains = ["blog.example.com"]
 
 ```
 检查清单：
-1. 公网服务器 frps 是否运行？ → systemctl status frps
-2. 防火墙是否开放 7000 端口？ → 本地 + 云平台安全组
+1. 公网服务�?frps 是否运行�?�?systemctl status frps
+2. 防火墙是否开�?7000 端口�?�?本地 + 云平台安全组
 3. token 是否一致？
-4. serverAddr 是否正确？
+4. serverAddr 是否正确�?
 ```
 
 ### 问题：网页打不开
 
 ```
 检查清单：
-1. frpc 显示 proxy success 了吗？
+1. frpc 显示 proxy success 了吗�?
 2. 本地博客能访问吗？→ http://localhost:3000
-3. 域名 DNS 解析正确吗？→ ping blog.example.com
+3. 域名 DNS 解析正确吗？�?ping blog.example.com
 4. 公网 80 端口开放了吗？
 ```
 
@@ -393,17 +393,17 @@ customDomains = ["blog.example.com"]
 ```
 检查清单：
 1. 后端是否运行？→ http://localhost:5000/api
-2. 前端 API_BASE 地址对吗？
+2. 前端 API_BASE 地址对吗�?
 3. CORS 配置正确吗？
 ```
 
 ### 查看日志
 
 ```powershell
-# Windows 客户端日志
+# Windows 客户端日�?
 type C:\frp\frpc.log
 
-# Linux 服务端日志
+# Linux 服务端日�?
 tail -f /var/log/frps.log
 ```
 
@@ -411,20 +411,20 @@ tail -f /var/log/frps.log
 
 ## 📊 Dashboard 监控
 
-访问 `http://你的公网IP:7500`，使用配置的用户名密码登录，可以看到：
+访问 `http://你的公网IP:7500`，使用配置的用户名密码登录，可以看到�?
 - 当前连接的客户端
-- 代理状态
+- 代理状�?
 - 流量统计
 
 ---
 
 ## ⚠️ 安全建议
 
-1. **修改默认 token** - 使用强密码
-2. **限制 Dashboard 访问** - 可以改用内网端口或加 IP 白名单
+1. **修改默认 token** - 使用强密�?
+2. **限制 Dashboard 访问** - 可以改用内网端口或加 IP 白名�?
 3. **使用 HTTPS** - 保护数据传输
 4. **定期更新 frp** - 获取安全补丁
-5. **监控流量** - 防止被滥用
+5. **监控流量** - 防止被滥�?
 
 ---
 
@@ -435,7 +435,7 @@ tail -f /var/log/frps.log
 pm2 start blog-api blog-web
 .\frpc.exe -c frpc.toml
 
-# 检查状态
+# 检查状�?
 pm2 status
 
 # 查看日志
