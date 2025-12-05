@@ -26,7 +26,7 @@ function Login() {
             const result = await login(email, password)
             localStorage.setItem('token', result.token)
             localStorage.setItem('user', JSON.stringify(result.user))
-            navigate('/admin')
+            navigate('/')
         } catch (err) {
             setError('// ACCESS DENIED: 身份验证失败')
             window.scrollTo(0, 0)
