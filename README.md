@@ -1,5 +1,15 @@
 # SupCH 风格个人博客 (Neo-Brutalist Blog)
 
+![Version](https://img.shields.io/badge/version-1.0.1-blue?style=flat-square)
+![GitHub last commit](https://img.shields.io/github/last-commit/SupCH/-AI-?style=flat-square)
+![GitHub repo size](https://img.shields.io/github/repo-size/SupCH/-AI-?style=flat-square)
+
+![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=flat-square&logo=node.js&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+
+
 这是一个基于 **React** 和 **Node.js** 全栈开发的个人博客系统，采用独特的 **Neo-Brutalist (新野蛮主义)** 设计风格。项目集成了完整的用户认证、内容管理、评论互动及后台管理功能，并针对生产环境部署进行了深度优化。
 
 当前版本：`v1.0.1`
