@@ -57,7 +57,7 @@ function Header({ isAdmin = false }: HeaderProps) {
         adminLinks.push({ to: '/admin/users', label: '用户管理' })
     }
 
-    adminLinks.push({ to: '/', label: '返回前台' })
+
 
     const navLinks = isAdmin
         ? adminLinks
