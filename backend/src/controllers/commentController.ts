@@ -57,6 +57,28 @@ export const commentController = {
         }
     },
 
+    // 获取全部评论（管理用，需要 ADMIN+ 权限）
+    async getComments(req: Request, res: Response) {
+        try {
+            const comments = await prisma.comment.findMany({
+                include: {
+                    author: {
+                        select: { id: true, name: true, email: true }
+                    },
+                    post: {
+                        select: { id: true, title: true, slug: true }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            })
+
+            res.json(comments)
+        } catch (error) {
+            console.error('获取评论失败:', error)
+            res.status(500).json({ error: '获取评论失败' })
+        }
+    },
+
     // 删除评论（需要 ADMIN+ 权限，由路由层控制）
     async deleteComment(req: Request, res: Response) {
         try {

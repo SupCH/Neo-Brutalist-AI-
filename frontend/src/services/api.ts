@@ -250,3 +250,14 @@ export async function deleteUser(userId: number) {
         method: 'DELETE',
     })
 }
+
+// Comment management (ADMIN+)
+export async function getAdminComments() {
+    return request<any[]>('/admin/comments')
+}
+
+export async function deleteComment(commentId: number) {
+    return request<any>(`/admin/comments/${commentId}`, {
+        method: 'DELETE',
+    })
+}

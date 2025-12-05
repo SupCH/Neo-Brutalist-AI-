@@ -13,6 +13,7 @@ import AdminDashboard from './pages/admin/Dashboard'
 import AdminPosts from './pages/admin/Posts'
 import AdminPostEditor from './pages/admin/PostEditor'
 import AdminUsers from './pages/admin/Users'
+import AdminComments from './pages/admin/Comments'
 
 function App() {
     return (
@@ -32,6 +33,7 @@ function App() {
                 <Route path="posts" element={<AdminPosts />} />
                 <Route path="posts/new" element={<AdminPostEditor />} />
                 <Route path="posts/:id/edit" element={<AdminPostEditor />} />
+                <Route path="comments" element={<AdminComments />} />
                 <Route path="users" element={<AdminUsers />} />
             </Route>
             {/* 404 页面 - 必须放在最后 */}
