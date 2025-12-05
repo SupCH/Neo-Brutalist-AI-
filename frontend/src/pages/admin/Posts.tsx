@@ -8,6 +8,7 @@ interface Post {
     title: string
     slug: string
     published: boolean
+    isPublic: boolean
     createdAt: string
     _count: {
         comments: number
@@ -108,6 +109,7 @@ function Posts() {
                             <tr>
                                 <th>标题</th>
                                 <th>状态</th>
+                                <th>可见性</th>
                                 <th>评论</th>
                                 <th>创建时间</th>
                                 <th>操作</th>
@@ -127,6 +129,11 @@ function Posts() {
                                                 {post.published ? '已发布' : '草稿'}
                                             </span>
                                         </td>
+                                        <td>
+                                            <span className={`status-badge ${post.isPublic ? 'status-public' : 'status-private'}`}>
+                                                {post.isPublic ? '公开' : '私密'}
+                                            </span>
+                                        </td>
                                         <td className="count-cell">{post._count.comments}</td>
                                         <td className="date-cell">
                                             {new Date(post.createdAt).toLocaleDateString('en-CA')}
@@ -143,7 +150,7 @@ function Posts() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="empty-cell">// 暂无文章数据</td>
+                                    <td colSpan={6} className="empty-cell">// 暂无文章数据</td>
                                 </tr>
                             )}
                         </tbody>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { login } from '../services/api'
+import { login, verifyEmail } from '../services/api'
 import './Login.css'
 
 function Login() {
@@ -10,6 +10,12 @@ function Login() {
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+
+    // Forgot Password State
+    const [showForgotModal, setShowForgotModal] = useState(false)
+    const [forgotEmail, setForgotEmail] = useState('')
+    const [verifyStatus, setVerifyStatus] = useState<'idle' | 'verifying' | 'success' | 'error'>('idle')
+    const [verifyMessage, setVerifyMessage] = useState('')
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -25,6 +31,21 @@ function Login() {
             setError('// ACCESS DENIED: 身份验证失败')
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleVerifyEmail = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setVerifyStatus('verifying')
+        setVerifyMessage('')
+
+        try {
+            await verifyEmail(forgotEmail)
+            setVerifyStatus('success')
+            setVerifyMessage('// EMAIL VERIFIED: 邮箱存在')
+        } catch (err) {
+            setVerifyStatus('error')
+            setVerifyMessage('// USER NOT FOUND: 邮箱不存在')
         }
     }
 
@@ -81,6 +102,16 @@ function Login() {
                             </div>
                         </div>
 
+                        <div className="form-footer">
+                            <button
+                                type="button"
+                                className="forgot-password-link"
+                                onClick={() => setShowForgotModal(true)}
+                            >
+                                忘记密码？
+                            </button>
+                        </div>
+
                         <button type="submit" className="login-btn" disabled={loading}>
                             {loading ? '验证中...' : '请求访问'}
                         </button>
@@ -91,6 +122,47 @@ function Login() {
                     </div>
                 </div>
             </div>
+
+            {/* Forgot Password Modal */}
+            {showForgotModal && (
+                <div className="modal-overlay" onClick={() => setShowForgotModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="terminal-header">
+                            <span className="terminal-title">password_recovery.exe</span>
+                            <button className="close-btn" onClick={() => setShowForgotModal(false)}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <h2>找回密码</h2>
+                            <p>请输入注册邮箱进行验证</p>
+
+                            <form onSubmit={handleVerifyEmail}>
+                                <div className="form-group">
+                                    <input
+                                        type="email"
+                                        className="form-input"
+                                        placeholder="Enter email address..."
+                                        value={forgotEmail}
+                                        onChange={(e) => setForgotEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                {verifyMessage && (
+                                    <div className={`verify-message ${verifyStatus}`}>
+                                        {verifyMessage}
+                                    </div>
+                                )}
+                                <button
+                                    type="submit"
+                                    className="login-btn"
+                                    disabled={verifyStatus === 'verifying'}
+                                >
+                                    {verifyStatus === 'verifying' ? '验证中...' : '验证邮箱'}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { getUserProfile, updateProfile, uploadAvatar, uploadProfileBg, getCurrentUser, changePassword } from '../services/api'
+import { getUserProfile, updateProfile, uploadAvatar, uploadProfileBg, getCurrentUser, changePassword, logout } from '../services/api'
 import NotFound from './NotFound'
 import './UserProfile.css'
 
@@ -156,10 +156,13 @@ function UserProfile() {
             setOldPassword('')
             setNewPassword('')
             setConfirmPassword('')
-            alert('密码修改成功！')
+            alert('密码修改成功！请重新登录')
+            logout()
         } catch (error: any) {
             console.error('密码修改失败:', error)
-            setPasswordError('原密码错误或服务暂不可用')
+            // 尝试获取后端返回的具体错误信息
+            const errorMessage = error.response?.data?.details || error.response?.data?.message || error.message || '服务暂不可用'
+            setPasswordError(errorMessage)
         } finally {
             setPasswordSaving(false)
         }

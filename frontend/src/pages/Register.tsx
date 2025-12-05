@@ -51,15 +51,35 @@ function Register() {
             localStorage.setItem('user', JSON.stringify(result.user))
             navigate('/admin')
         } catch (err: any) {
-            // 尝试解析后端返回的具体错误信息
-            if (err.response?.data?.details && Array.isArray(err.response.data.details)) {
-                const messages = err.response.data.details.map((d: any) => d.message).join('；')
-                setError(`// ERROR: ${messages}`)
-            } else if (err.response?.data?.error) {
-                setError(`// ERROR: ${err.response.data.error}`)
+            console.error('Registration error full object:', err)
+
+            let errorMessage = '// REGISTRATION FAILED: 注册失败'
+
+            if (err.response) {
+                // Backend returned an error response
+                const status = err.response.status
+                const data = err.response.data
+
+                console.log('Error response status:', status)
+                console.log('Error response data:', data)
+
+                if (data?.details) {
+                    // Handle both array details and string details
+                    errorMessage = `// ERROR (${status}): ${Array.isArray(data.details) ? data.details.map((d: any) => d.message).join('; ') : data.details}`
+                } else if (data?.message) {
+                    errorMessage = `// ERROR (${status}): ${data.message}`
+                } else {
+                    errorMessage = `// ERROR (${status}): Server returned error without details`
+                }
+            } else if (err.request) {
+                // Request was made but no response received
+                errorMessage = '// NETWORK ERROR: 无法连接到服务器'
             } else {
-                setError('// REGISTRATION FAILED: 注册失败，请检查输入后重试')
+                // Something happened in setting up the request
+                errorMessage = `// CLIENT ERROR: ${err.message}`
             }
+
+            setError(errorMessage)
         } finally {
             setLoading(false)
         }

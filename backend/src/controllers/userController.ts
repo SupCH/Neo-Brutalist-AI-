@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import prisma from '../utils/prisma.js'
 import { AuthRequest } from '../middleware/auth.js'
+import bcrypt from 'bcryptjs'
 
 export const userController = {
     // 获取用户公开主页信息 (公开 API)
@@ -270,7 +271,7 @@ export const userController = {
             }
 
             // 验证原密码
-            const bcrypt = await import('bcryptjs')
+            // const bcrypt = await import('bcryptjs') // Removed dynamic import
             const isValidPassword = await bcrypt.compare(oldPassword, user.password)
 
             if (!isValidPassword) {

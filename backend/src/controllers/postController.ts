@@ -10,7 +10,7 @@ export const postController = {
             const skip = (page - 1) * limit
 
             const posts = await prisma.post.findMany({
-                where: { published: true },
+                where: { published: true, isPublic: true },
                 include: {
                     author: {
                         select: { id: true, name: true, avatar: true }
@@ -41,6 +41,7 @@ export const postController = {
             const posts = await prisma.post.findMany({
                 where: {
                     published: true,
+                    isPublic: true,
                     OR: [
                         { title: { contains: query } },
                         { content: { contains: query } },
@@ -70,7 +71,7 @@ export const postController = {
             const { slug } = req.params
 
             const post = await prisma.post.findFirst({
-                where: { slug, published: true },
+                where: { slug, published: true, isPublic: true },
                 include: {
                     author: {
                         select: { id: true, name: true, avatar: true, bio: true }
@@ -102,7 +103,7 @@ export const postController = {
     async getRandomPost(req: Request, res: Response) {
         try {
             const count = await prisma.post.count({
-                where: { published: true }
+                where: { published: true, isPublic: true }
             })
 
             if (count === 0) {
@@ -111,7 +112,7 @@ export const postController = {
 
             const skip = Math.floor(Math.random() * count)
             const post = await prisma.post.findFirst({
-                where: { published: true },
+                where: { published: true, isPublic: true },
                 skip: skip,
                 select: { slug: true }
             })

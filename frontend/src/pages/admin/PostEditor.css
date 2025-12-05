@@ -122,6 +122,7 @@
     align-items: center;
     gap: 0.75rem;
     cursor: pointer;
+    flex-wrap: wrap;
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -133,6 +134,12 @@
 
 .checkbox-text {
     font-weight: 700;
+}
+
+.checkbox-hint {
+    font-size: 0.75rem;
+    color: #666;
+    font-weight: 400;
 }
 
 /* Tags Selector */

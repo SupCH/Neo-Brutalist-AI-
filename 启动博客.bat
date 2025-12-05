@@ -18,7 +18,7 @@ start "Blog Backend" cmd /k "npm run dev"
 echo [2/2] 启动前端服务...
 timeout /t 3 /nobreak >nul
 cd /d %PROJECT_PATH%\frontend
-start "Blog Frontend" cmd /k "npx serve -s dist -l 3000"
+start "Blog Frontend" cmd /k "npm run dev"
 
 echo.
 echo ╔══════════════════════════════════════════════════════════╗

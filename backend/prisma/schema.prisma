@@ -37,6 +37,7 @@ model Post {
   excerpt    String?
   coverImage String?
   published  Boolean   @default(false)
+  isPublic   Boolean   @default(true)   // 是否公开，公开文章所有人可见
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   

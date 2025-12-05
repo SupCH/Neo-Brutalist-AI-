@@ -17,11 +17,29 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
         headers,
     })
 
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+    const responseText = await response.text()
+
+    let data
+    try {
+        data = JSON.parse(responseText)
+    } catch (e) {
+        console.error('JSON Parse Error:', e)
+        console.error('Raw Response:', responseText)
+        throw new Error(`Invalid JSON response from server: ${responseText.substring(0, 100)}...`)
     }
 
-    return response.json()
+    if (!response.ok) {
+        // Construct error object similar to what axios/fetch would expect if we want to keep consistency
+        // or just throw the data if it has error info
+        const error: any = new Error(data.message || `HTTP error! status: ${response.status}`)
+        error.response = {
+            status: response.status,
+            data: data
+        }
+        throw error
+    }
+
+    return data
 }
 
 // Public API
@@ -118,10 +136,17 @@ export async function register(name: string, email: string, password: string) {
     })
 }
 
+export async function verifyEmail(email: string) {
+    return request<{ success: boolean; message: string }>('/auth/verify-email', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+    })
+}
+
 export function logout() {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    window.location.href = '/login'
+    window.location.href = '/'
 }
 
 export async function changePassword(oldPassword: string, newPassword: string, confirmPassword: string) {

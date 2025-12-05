@@ -35,7 +35,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
         }
 
         req.userId = user.id
-        req.userRole = user.role
+        req.userRole = user.role as Role
 
         next()
     } catch (error) {

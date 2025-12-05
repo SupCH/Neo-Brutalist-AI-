@@ -20,6 +20,7 @@ function PostEditor() {
     const [excerpt, setExcerpt] = useState('')
     const [coverImage, setCoverImage] = useState('')
     const [published, setPublished] = useState(false)
+    const [isPublic, setIsPublic] = useState(true)
     const [selectedTags, setSelectedTags] = useState<number[]>([])
     const [allTags, setAllTags] = useState<Tag[]>([])
     const [loading, setLoading] = useState(false)
@@ -52,6 +53,7 @@ function PostEditor() {
             setExcerpt(post.excerpt || '')
             setCoverImage(post.coverImage || '')
             setPublished(post.published)
+            setIsPublic(post.isPublic !== undefined ? post.isPublic : true)
             setSelectedTags(post.tags.map((t: Tag) => t.id))
         } catch (error) {
             console.error('获取文章失败:', error)
@@ -93,6 +95,7 @@ function PostEditor() {
             excerpt,
             coverImage,
             published,
+            isPublic,
             tagIds: selectedTags,
         }
 
@@ -180,6 +183,18 @@ function PostEditor() {
                                     onChange={(e) => setPublished(e.target.checked)}
                                 />
                                 <span className="checkbox-text">发布文章</span>
+                            </label>
+                        </div>
+
+                        <div className="form-group">
+                            <label className="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    checked={isPublic}
+                                    onChange={(e) => setIsPublic(e.target.checked)}
+                                />
+                                <span className="checkbox-text">公开文章</span>
+                                <span className="checkbox-hint">（关闭则只有你能看到）</span>
                             </label>
                         </div>
 

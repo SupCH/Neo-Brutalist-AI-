@@ -126,6 +126,16 @@
     color: #666;
 }
 
+.status-public {
+    background-color: var(--cyan-pop);
+    color: var(--neo-black);
+}
+
+.status-private {
+    background-color: var(--hot-pink);
+    color: #fff;
+}
+
 /* Count Cell */
 .count-cell {
     font-family: var(--font-mono);

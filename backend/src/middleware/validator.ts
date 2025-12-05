@@ -76,6 +76,9 @@ export const createPostValidation = [
     body('published')
         .optional()
         .isBoolean().withMessage('published 必须是布尔值'),
+    body('isPublic')
+        .optional()
+        .isBoolean().withMessage('isPublic 必须是布尔值'),
     body('tagIds')
         .optional()
         .isArray().withMessage('tagIds 必须是数组'),
@@ -106,6 +109,9 @@ export const updatePostValidation = [
     body('published')
         .optional()
         .isBoolean().withMessage('published 必须是布尔值'),
+    body('isPublic')
+        .optional()
+        .isBoolean().withMessage('isPublic 必须是布尔值'),
     handleValidationErrors
 ]
 

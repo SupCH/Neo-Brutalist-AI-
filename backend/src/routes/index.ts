@@ -76,6 +76,8 @@ router.post('/comments', apiLimiter, createCommentValidation, commentController.
 // 认证接口
 router.post('/auth/login', authLimiter, loginValidation, authController.login)
 router.post('/auth/register', authLimiter, registerValidation, authController.register)
+router.post('/auth/verify-email', authLimiter, authController.verifyEmail)
+router.get('/auth/debug', authController.debugAuth)
 
 // 用户个人资料接口（需登录）
 router.put('/user/profile', authMiddleware, updateProfileValidation, userController.updateProfile)

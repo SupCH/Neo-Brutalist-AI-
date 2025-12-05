@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
@@ -34,8 +35,14 @@ app.use(express.urlencoded({ extended: true }))
 // 静态文件服务（上传的图片）
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
+// 生产环境：托管前端静态文件
+// 检查 frontend/dist 是否存在
+const frontendDist = path.join(__dirname, '../../frontend/dist')
+app.use(express.static(frontendDist))
+
 // API 路由
 app.use('/api', routes)
+
 
 // 健康检查 - Cyber Style
 app.get('/health', (req, res) => {
@@ -70,7 +77,23 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     })
 })
 
-// 404 处理
+// SPA 路由回退处理（必须在 API 路由之后，错误处理之前）
+// 任何未被 API 捕获的请求都返回 index.html
+app.get('*', (req, res, next) => {
+    // 如果请求的是 API 或 uploads 但没找到，应该进入错误处理，而不是返回 index.html
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+        return next()
+    }
+
+    res.sendFile(path.join(frontendDist, 'index.html'), (err) => {
+        if (err) {
+            // 如果找不到 index.html（可能是开发环境或未构建），则返回 404 JSON
+            next()
+        }
+    })
+})
+
+// 404 处理 (API)
 app.use((req: express.Request, res: express.Response) => {
     res.status(404).json({
         error: true,

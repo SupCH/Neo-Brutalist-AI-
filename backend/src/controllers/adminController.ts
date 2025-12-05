@@ -81,7 +81,7 @@ export const adminController = {
     // 创建文章
     async createPost(req: AuthRequest, res: Response) {
         try {
-            const { title, slug, content, excerpt, coverImage, published, tagIds } = req.body
+            const { title, slug, content, excerpt, coverImage, published, isPublic, tagIds } = req.body
             const authorId = req.userId!
 
             const post = await prisma.post.create({
@@ -92,6 +92,7 @@ export const adminController = {
                     excerpt,
                     coverImage,
                     published: published || false,
+                    isPublic: isPublic !== undefined ? isPublic : true,
                     authorId,
                     tags: tagIds ? {
                         connect: tagIds.map((id: number) => ({ id }))
@@ -113,7 +114,7 @@ export const adminController = {
     async updatePost(req: AuthRequest, res: Response) {
         try {
             const id = parseInt(req.params.id)
-            const { title, slug, content, excerpt, coverImage, published, tagIds } = req.body
+            const { title, slug, content, excerpt, coverImage, published, isPublic, tagIds } = req.body
 
             // 先断开所有标签关联
             await prisma.post.update({
@@ -132,6 +133,7 @@ export const adminController = {
                     excerpt,
                     coverImage,
                     published,
+                    isPublic,
                     tags: tagIds ? {
                         connect: tagIds.map((tid: number) => ({ id: tid }))
                     } : undefined
