@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { isAuthenticated, getCurrentUser, logout } from '../services/api'
 import SearchBox from './SearchBox'
-import ThemeToggle from './ThemeToggle'
 import './Header.css'
 
 interface HeaderProps {
@@ -101,9 +100,6 @@ function Header({ isAdmin = false }: HeaderProps) {
 
                         {/* Search Box - 只在前台显示 */}
                         {!isAdmin && <SearchBox />}
-
-                        {/* Theme Toggle */}
-                        <ThemeToggle />
 
                         {/* Auth Buttons */}
                         {!isAdmin && (
