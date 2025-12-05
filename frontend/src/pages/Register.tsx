@@ -17,28 +17,33 @@ function Register() {
 
         if (password !== confirmPassword) {
             setError('// ERROR: 两次输入的密码不一致')
+            window.scrollTo(0, 0)
             return
         }
 
         // 前端预校验密码规则
         if (password.length < 6) {
             setError('// ERROR: 密码至少需要 6 个字符')
+            window.scrollTo(0, 0)
             return
         }
 
         if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(password)) {
             setError('// ERROR: 密码必须同时包含字母和数字（如 abc123）')
+            window.scrollTo(0, 0)
             return
         }
 
         // 前端预校验用户名
         if (name.length < 2 || name.length > 30) {
             setError('// ERROR: 用户名长度应为 2-30 个字符')
+            window.scrollTo(0, 0)
             return
         }
 
         if (!/^[\u4e00-\u9fa5a-zA-Z0-9_]+$/.test(name)) {
             setError('// ERROR: 用户名只能包含中文、字母、数字和下划线')
+            window.scrollTo(0, 0)
             return
         }
 
@@ -80,6 +85,7 @@ function Register() {
             }
 
             setError(errorMessage)
+            window.scrollTo(0, 0)
         } finally {
             setLoading(false)
         }

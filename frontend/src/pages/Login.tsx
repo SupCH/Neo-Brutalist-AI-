@@ -29,6 +29,7 @@ function Login() {
             navigate('/admin')
         } catch (err) {
             setError('// ACCESS DENIED: 身份验证失败')
+            window.scrollTo(0, 0)
         } finally {
             setLoading(false)
         }
