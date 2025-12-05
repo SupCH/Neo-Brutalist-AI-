@@ -1,8 +1,8 @@
 # SupCH 风格个人博客 (Neo-Brutalist Blog)
 
-![Version](https://img.shields.io/badge/version-1.0.1-blue?style=flat-square)
-![GitHub last commit](https://img.shields.io/github/last-commit/SupCH/-AI-?style=flat-square)
-![GitHub repo size](https://img.shields.io/github/repo-size/SupCH/-AI-?style=flat-square)
+![Version](https://img.shields.io/badge/版本-1.0.1-blue?style=flat-square)
+![GitHub last commit](https://img.shields.io/github/last-commit/SupCH/-AI-?style=flat-square&label=最近提交)
+![GitHub repo size](https://img.shields.io/github/repo-size/SupCH/-AI-?style=flat-square&label=仓库大小)
 
 ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)
