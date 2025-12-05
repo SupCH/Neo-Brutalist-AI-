@@ -42,6 +42,19 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     return data
 }
 
+// 获取当前登录用户信息
+export function getCurrentUser(): { userId: number; role: string } | null {
+    const token = localStorage.getItem('token')
+    if (!token) return null
+
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        return { userId: payload.userId, role: payload.role }
+    } catch {
+        return null
+    }
+}
+
 // Public API
 export async function getPosts(page = 1, limit = 10) {
     return request<any[]>(`/posts?page=${page}&limit=${limit}`)
@@ -74,6 +87,12 @@ export async function createComment(postId: number, content: string) {
     return request<any>('/comments', {
         method: 'POST',
         body: JSON.stringify({ postId, content }),
+    })
+}
+
+export async function deleteOwnComment(commentId: number) {
+    return request<any>(`/comments/${commentId}`, {
+        method: 'DELETE',
     })
 }
 
@@ -172,11 +191,6 @@ export async function changeEmail(email: string, password: string) {
 
 export function isAuthenticated() {
     return !!localStorage.getItem('token')
-}
-
-export function getCurrentUser() {
-    const user = localStorage.getItem('user')
-    return user ? JSON.parse(user) : null
 }
 
 // Admin API

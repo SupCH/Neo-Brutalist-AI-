@@ -73,6 +73,7 @@ router.post('/tags', authMiddleware, requireAdmin, tagController.createTag)
 router.get('/tags/:slug/posts', apiLimiter, slugParamValidation, tagController.getTagPosts)
 router.get('/users/:id', apiLimiter, idParamValidation, userController.getUserProfile)
 router.post('/comments', apiLimiter, createCommentValidation, commentController.createComment)
+router.delete('/comments/:id', authMiddleware, commentController.deleteOwnComment)
 
 // 认证接口
 router.post('/auth/login', authLimiter, loginValidation, authController.login)

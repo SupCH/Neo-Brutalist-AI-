@@ -83,7 +83,7 @@ function UserProfile() {
 
                 // 检查是否是主页所有者
                 const currentUser = getCurrentUser()
-                if (currentUser && currentUser.id === parseInt(id)) {
+                if (currentUser && currentUser.userId === parseInt(id)) {
                     setIsOwner(true)
                 }
             } catch (error) {

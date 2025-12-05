@@ -356,3 +356,21 @@
     color: var(--acid-green);
     padding: 0 0.25rem;
 }
+
+/* Comment Delete Button */
+.comment-delete-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background-color: transparent;
+    color: var(--alert-red);
+    border: 1px solid var(--alert-red);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-left: auto;
+}
+
+.comment-delete-btn:hover {
+    background-color: var(--alert-red);
+    color: #fff;
+}

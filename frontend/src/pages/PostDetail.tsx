@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { marked } from 'marked'
-import { getPost, createComment, isAuthenticated } from '../services/api'
+import { getPost, createComment, isAuthenticated, deleteOwnComment, getCurrentUser } from '../services/api'
 import NotFound from './NotFound'
 import TableOfContents from '../components/TableOfContents'
 import Skeleton from '../components/Skeleton'
@@ -210,6 +210,32 @@ function PostDetail() {
                                         <span className="comment-date">
                                             {new Date(comment.createdAt).toLocaleDateString('en-CA')}
                                         </span>
+                                        {/* 显示删除按钮：评论作者本人 或 超级管理员 */}
+                                        {isAuthenticated() && (() => {
+                                            const currentUser = getCurrentUser()
+                                            const canDelete = currentUser && (
+                                                comment.author?.id === currentUser.userId ||
+                                                currentUser.role === 'SUPER_ADMIN'
+                                            )
+                                            return canDelete ? (
+                                                <button
+                                                    className="comment-delete-btn"
+                                                    onClick={async () => {
+                                                        if (!confirm('确定要删除这条评论吗？')) return
+                                                        try {
+                                                            await deleteOwnComment(comment.id)
+                                                            const data = await getPost(post.slug)
+                                                            setPost(data)
+                                                        } catch (error) {
+                                                            console.error('删除评论失败:', error)
+                                                            alert('删除评论失败')
+                                                        }
+                                                    }}
+                                                >
+                                                    删除
+                                                </button>
+                                            ) : null
+                                        })()}
                                     </div>
                                     <p className="comment-content">{comment.content}</p>
                                 </div>

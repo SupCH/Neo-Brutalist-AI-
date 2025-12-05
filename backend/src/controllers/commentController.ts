@@ -102,5 +102,53 @@ export const commentController = {
             console.error('删除评论失败:', error)
             res.status(500).json({ error: '删除评论失败' })
         }
+    },
+
+    // 用户删除自己的评论（或超管删除任意评论）
+    async deleteOwnComment(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id)
+
+            // 从 token 获取用户信息
+            const authHeader = req.headers.authorization
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                return res.status(401).json({ error: '请先登录' })
+            }
+
+            let userId: number
+            let userRole: string
+            try {
+                const token = authHeader.substring(7)
+                const secret = process.env.JWT_SECRET || 'default-secret'
+                const decoded = jwt.verify(token, secret) as { userId: number; role: string }
+                userId = decoded.userId
+                userRole = decoded.role
+            } catch {
+                return res.status(401).json({ error: '登录已过期，请重新登录' })
+            }
+
+            // 检查评论是否存在
+            const comment = await prisma.comment.findUnique({
+                where: { id }
+            })
+
+            if (!comment) {
+                return res.status(404).json({ error: '评论不存在' })
+            }
+
+            // 验证权限：只能删除自己的评论，或者是超管
+            if (comment.authorId !== userId && userRole !== 'SUPER_ADMIN') {
+                return res.status(403).json({ error: '只能删除自己的评论' })
+            }
+
+            await prisma.comment.delete({
+                where: { id }
+            })
+
+            res.json({ success: true, message: '评论已删除' })
+        } catch (error) {
+            console.error('删除评论失败:', error)
+            res.status(500).json({ error: '删除评论失败' })
+        }
     }
 }
