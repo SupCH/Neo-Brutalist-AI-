@@ -82,7 +82,7 @@ export const userController = {
             res.json(users)
         } catch (error) {
             console.error('// GET USERS ERROR:', error)
-            res.status(500).json({ error: '// SYSTEM ERROR: 获取用户列表失败' })
+            res.status(500).json({ error: '// 系统错误: 获取用户列表失败' })
         }
     },
 
@@ -94,12 +94,12 @@ export const userController = {
 
             // 验证角色值
             if (!['USER', 'ADMIN', 'SUPER_ADMIN'].includes(role)) {
-                return res.status(400).json({ error: '// INVALID ROLE: 无效的角色值' })
+                return res.status(400).json({ error: '// 无效角色: 无效的角色值' })
             }
 
             // 不能更改自己的角色
             if (parseInt(id) === req.userId) {
-                return res.status(400).json({ error: '// FORBIDDEN: 不能更改自己的角色' })
+                return res.status(400).json({ error: '// 禁止操作: 不能更改自己的角色' })
             }
 
             const user = await prisma.user.update({
@@ -115,12 +115,12 @@ export const userController = {
 
             res.json({
                 success: true,
-                message: `// ROLE UPDATED: 用户角色已更改为 ${role}`,
+                message: `// 角色已更新: 用户角色已更改为 ${role}`,
                 user
             })
         } catch (error) {
             console.error('// UPDATE ROLE ERROR:', error)
-            res.status(500).json({ error: '// SYSTEM ERROR: 更新角色失败' })
+            res.status(500).json({ error: '// 系统错误: 更新角色失败' })
         }
     },
 
@@ -132,7 +132,7 @@ export const userController = {
 
             // 不能删除自己
             if (userId === req.userId) {
-                return res.status(400).json({ error: '// FORBIDDEN: 不能删除自己' })
+                return res.status(400).json({ error: '// 禁止操作: 不能删除自己' })
             }
 
             // 删除用户，文章和评论的authorId会自动设为null
@@ -142,11 +142,11 @@ export const userController = {
 
             res.json({
                 success: true,
-                message: '// USER DELETED: 用户已删除，其文章和评论已标记为已删除用户'
+                message: '// 用户已删除: 用户已删除，其文章和评论已标记为已删除用户'
             })
         } catch (error) {
             console.error('// DELETE USER ERROR:', error)
-            res.status(500).json({ error: '// SYSTEM ERROR: 删除用户失败' })
+            res.status(500).json({ error: '// 系统错误: 删除用户失败' })
         }
     },
 
@@ -261,7 +261,7 @@ export const userController = {
             if (newPassword !== confirmPassword) {
                 return res.status(400).json({
                     error: true,
-                    message: '// PASSWORD MISMATCH',
+                    message: '// 密码不匹配',
                     details: '两次输入的新密码不一致'
                 })
             }
@@ -274,7 +274,7 @@ export const userController = {
             if (!user) {
                 return res.status(404).json({
                     error: true,
-                    message: '// USER NOT FOUND',
+                    message: '// 用户未找到',
                     details: '用户不存在'
                 })
             }
@@ -286,7 +286,7 @@ export const userController = {
             if (!isValidPassword) {
                 return res.status(401).json({
                     error: true,
-                    message: '// ACCESS DENIED',
+                    message: '// 拒绝访问',
                     details: '原密码错误'
                 })
             }
@@ -301,14 +301,14 @@ export const userController = {
 
             res.json({
                 success: true,
-                message: '// PASSWORD UPDATED',
+                message: '// 密码已更新',
                 details: '密码修改成功'
             })
         } catch (error) {
             console.error('// CHANGE PASSWORD ERROR:', error)
             res.status(500).json({
                 error: true,
-                message: '// SYSTEM MALFUNCTION',
+                message: '// 系统故障',
                 details: '密码修改服务暂不可用'
             })
         }

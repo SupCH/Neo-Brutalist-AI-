@@ -15,8 +15,8 @@ export const authController = {
                 console.log('Missing credentials')
                 return res.status(400).json({
                     error: true,
-                    message: '// MISSING CREDENTIALS',
-                    details: 'Email/UID and password required for authentication'
+                    message: '// 凭证缺失',
+                    details: '必须提供邮箱/UID和密码'
                 })
             }
 
@@ -46,8 +46,8 @@ export const authController = {
             if (!user) {
                 return res.status(401).json({
                     error: true,
-                    message: '// ACCESS DENIED',
-                    details: 'Invalid credentials - User not found'
+                    message: '// 访问拒绝',
+                    details: '认证失败 - 用户不存在'
                 })
             }
 
@@ -57,8 +57,8 @@ export const authController = {
             if (!isValidPassword) {
                 return res.status(401).json({
                     error: true,
-                    message: '// ACCESS DENIED',
-                    details: 'Invalid credentials - Wrong password'
+                    message: '// 访问拒绝',
+                    details: '认证失败 - 密码错误'
                 })
             }
 
@@ -71,7 +71,7 @@ export const authController = {
 
             res.json({
                 success: true,
-                message: '// ACCESS GRANTED',
+                message: '// 验证通过',
                 token,
                 user: {
                     id: user.id,
@@ -86,8 +86,8 @@ export const authController = {
             console.error('// LOGIN ERROR:', error)
             res.status(500).json({
                 error: true,
-                message: '// SYSTEM MALFUNCTION',
-                details: 'Authentication service unavailable'
+                message: '// 系统故障',
+                details: '认证服务暂时不可用'
             })
         }
     },
@@ -100,16 +100,16 @@ export const authController = {
             if (!name || !email || !password) {
                 return res.status(400).json({
                     error: true,
-                    message: '// MISSING DATA',
-                    details: 'Name, email and password are required'
+                    message: '// 数据缺失',
+                    details: '昵称、邮箱和密码为必填项'
                 })
             }
 
             if (password.length < 6) {
                 return res.status(400).json({
                     error: true,
-                    message: '// WEAK PASSWORD',
-                    details: 'Password must be at least 6 characters'
+                    message: '// 密码太弱',
+                    details: '密码长度至少需6位'
                 })
             }
 
@@ -121,8 +121,8 @@ export const authController = {
             if (existingUser) {
                 return res.status(400).json({
                     error: true,
-                    message: '// USER EXISTS',
-                    details: 'This email is already registered'
+                    message: '// 用户已存在',
+                    details: '该邮箱已被注册'
                 })
             }
 
@@ -134,8 +134,8 @@ export const authController = {
             if (existingName) {
                 return res.status(400).json({
                     error: true,
-                    message: '// NAME TAIKEN',
-                    details: 'This username is already taken, please choose another one'
+                    message: '// 昵称已存在',
+                    details: '该昵称已被占用，请换一个'
                 })
             }
 
@@ -161,7 +161,7 @@ export const authController = {
 
             res.status(201).json({
                 success: true,
-                message: '// USER CREATED',
+                message: '// 用户已创建',
                 token,
                 user: {
                     id: user.id,
@@ -178,8 +178,8 @@ export const authController = {
             }
             res.status(500).json({
                 error: true,
-                message: '// SYSTEM MALFUNCTION',
-                details: error instanceof Error ? error.message : 'Unknown registration error'
+                message: '// 系统故障',
+                details: error instanceof Error ? error.message : '未知的注册错误'
             })
         }
     },
@@ -192,8 +192,8 @@ export const authController = {
             if (!email) {
                 return res.status(400).json({
                     error: true,
-                    message: '// MISSING EMAIL',
-                    details: 'Email is required'
+                    message: '// 邮箱缺失',
+                    details: '必须提供邮箱地址'
                 })
             }
 
@@ -204,22 +204,22 @@ export const authController = {
             if (!user) {
                 return res.status(404).json({
                     error: true,
-                    message: '// USER NOT FOUND',
-                    details: 'Email does not exist'
+                    message: '// 用户未找到',
+                    details: '该邮箱尚未注册'
                 })
             }
 
             res.json({
                 success: true,
-                message: '// EMAIL VERIFIED',
-                details: 'Email exists in the system'
+                message: '// 邮箱已验证',
+                details: '该邮箱已存在于系统中'
             })
         } catch (error) {
             console.error('// VERIFY ERROR:', error)
             res.status(500).json({
                 error: true,
-                message: '// SYSTEM MALFUNCTION',
-                details: 'Verification service unavailable'
+                message: '// 系统故障',
+                details: '验证服务暂时不可用'
             })
         }
     },
