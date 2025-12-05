@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { marked } from 'marked'
 import { getPost, createComment, isAuthenticated } from '../services/api'
 import NotFound from './NotFound'
 import TableOfContents from '../components/TableOfContents'
@@ -111,6 +112,11 @@ function PostDetail() {
 
     const formattedDate = new Date(post.createdAt).toLocaleDateString('en-CA')
 
+    // 解析 Markdown 内容
+    const parsedContent = useMemo(() => {
+        return marked.parse(post.content) as string
+    }, [post.content])
+
     return (
         <div className="post-page-layout">
             {/* Table of Contents - Floating Button */}
@@ -143,7 +149,7 @@ function PostDetail() {
                 </header>
 
                 {/* Article Content */}
-                <div className="post-content" dangerouslySetInnerHTML={{ __html: post.content }} />
+                <div className="post-content" dangerouslySetInnerHTML={{ __html: parsedContent }} />
 
                 {/* Tags Footer */}
                 <div className="post-footer">

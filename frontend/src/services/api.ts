@@ -63,6 +63,13 @@ export async function getTagPosts(slug: string) {
     return request<any>(`/tags/${slug}/posts`)
 }
 
+export async function createTag(name: string) {
+    return request<any>('/tags', {
+        method: 'POST',
+        body: JSON.stringify({ name }),
+    })
+}
+
 export async function createComment(postId: number, content: string) {
     return request<any>('/comments', {
         method: 'POST',

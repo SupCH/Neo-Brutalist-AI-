@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getAdminPost, createPost, updatePost, getTags } from '../../services/api'
+import { getAdminPost, createPost, updatePost, getTags, createTag } from '../../services/api'
 import './PostEditor.css'
 
 interface Tag {
@@ -23,6 +23,8 @@ function PostEditor() {
     const [isPublic, setIsPublic] = useState(true)
     const [selectedTags, setSelectedTags] = useState<number[]>([])
     const [allTags, setAllTags] = useState<Tag[]>([])
+    const [newTagName, setNewTagName] = useState('')
+    const [creatingTag, setCreatingTag] = useState(false)
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
 
@@ -82,6 +84,29 @@ function PostEditor() {
                 ? prev.filter(id => id !== tagId)
                 : [...prev, tagId]
         )
+    }
+
+    const handleCreateTag = async () => {
+        if (!newTagName.trim()) return
+
+        setCreatingTag(true)
+        try {
+            const newTag = await createTag(newTagName.trim())
+            setAllTags(prev => [...prev, newTag])
+            setSelectedTags(prev => [...prev, newTag.id])
+            setNewTagName('')
+        } catch (error: any) {
+            // 如果标签已存在，尝试从返回数据中获取并选中
+            if (error.response?.data?.tag) {
+                const existingTag = error.response.data.tag
+                if (!selectedTags.includes(existingTag.id)) {
+                    setSelectedTags(prev => [...prev, existingTag.id])
+                }
+            }
+            console.error('创建标签失败:', error)
+        } finally {
+            setCreatingTag(false)
+        }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -236,6 +261,26 @@ function PostEditor() {
                                     {tag.name}
                                 </button>
                             ))}
+                        </div>
+                        <div className="new-tag-input" style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+                            <input
+                                type="text"
+                                className="form-input"
+                                placeholder="输入新标签名..."
+                                value={newTagName}
+                                onChange={(e) => setNewTagName(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleCreateTag())}
+                                style={{ flex: 1 }}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-secondary hover-trigger"
+                                onClick={handleCreateTag}
+                                disabled={creatingTag || !newTagName.trim()}
+                                style={{ whiteSpace: 'nowrap' }}
+                            >
+                                {creatingTag ? '创建中...' : '+ 新建'}
+                            </button>
                         </div>
                     </div>
 

@@ -69,6 +69,7 @@ router.get('/posts/search', apiLimiter, searchValidation, postController.searchP
 router.get('/posts/random', apiLimiter, postController.getRandomPost)
 router.get('/posts/:slug', apiLimiter, slugParamValidation, postController.getPost)
 router.get('/tags', apiLimiter, tagController.getTags)
+router.post('/tags', authMiddleware, requireAdmin, tagController.createTag)
 router.get('/tags/:slug/posts', apiLimiter, slugParamValidation, tagController.getTagPosts)
 router.get('/users/:id', apiLimiter, idParamValidation, userController.getUserProfile)
 router.post('/comments', apiLimiter, createCommentValidation, commentController.createComment)

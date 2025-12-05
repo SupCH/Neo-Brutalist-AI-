@@ -126,5 +126,43 @@ export const tagController = {
             console.error('获取标签文章失败:', error)
             res.status(500).json({ error: '获取标签文章失败' })
         }
+    },
+
+    // 创建新标签（需要管理员权限）
+    async createTag(req: Request, res: Response) {
+        try {
+            const { name } = req.body
+
+            if (!name || name.trim().length === 0) {
+                return res.status(400).json({ error: '标签名称不能为空' })
+            }
+
+            const trimmedName = name.trim()
+            const slug = trimmedName
+                .toLowerCase()
+                .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+
+            // 检查标签是否已存在
+            const existingTag = await prisma.tag.findUnique({
+                where: { slug }
+            })
+
+            if (existingTag) {
+                return res.status(400).json({ error: '该标签已存在', tag: existingTag })
+            }
+
+            const tag = await prisma.tag.create({
+                data: {
+                    name: trimmedName,
+                    slug
+                }
+            })
+
+            res.status(201).json(tag)
+        } catch (error) {
+            console.error('创建标签失败:', error)
+            res.status(500).json({ error: '创建标签失败' })
+        }
     }
 }
