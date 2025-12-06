@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getAdminPost, createPost, updatePost, getTags, createTag, getPostVersions, getPostVersion, rollbackPostVersion } from '../../services/api'
 import { marked } from 'marked'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 import './PostEditor.css'
 
 interface Tag {
@@ -523,7 +525,35 @@ function PostEditor() {
                                     <div
                                         className="preview-content post-content"
                                         dangerouslySetInnerHTML={{
-                                            __html: useMemo(() => marked.parse(content || ''), [content]) as string
+                                            __html: useMemo(() => {
+                                                let html = marked.parse(content || '') as string
+
+                                                // 渲染块级公式 $$...$$
+                                                html = html.replace(/\$\$([\s\S]*?)\$\$/g, (_match, formula) => {
+                                                    try {
+                                                        return `<div class="math-block">${katex.renderToString(formula.trim(), {
+                                                            displayMode: true,
+                                                            throwOnError: false
+                                                        })}</div>`
+                                                    } catch {
+                                                        return `<div class="math-error">LaTeX Error</div>`
+                                                    }
+                                                })
+
+                                                // 渲染行内公式 $...$
+                                                html = html.replace(/\$([^$\n]+?)\$/g, (_match, formula) => {
+                                                    try {
+                                                        return katex.renderToString(formula.trim(), {
+                                                            displayMode: false,
+                                                            throwOnError: false
+                                                        })
+                                                    } catch {
+                                                        return formula
+                                                    }
+                                                })
+
+                                                return html
+                                            }, [content])
                                         }}
                                     />
                                 </div>

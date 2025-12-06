@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom'
 import { marked } from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/atom-one-dark.css'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 import { getPost, createComment, isAuthenticated, deleteOwnComment, getCurrentUser } from '../services/api'
 import NotFound from './NotFound'
 import TableOfContents from '../components/TableOfContents'
@@ -168,6 +170,39 @@ function PostDetail() {
         return () => {
             imageObserver.disconnect()
         }
+    }, [post])
+
+    // LaTeX 公式渲染
+    useEffect(() => {
+        if (!contentRef.current || !post) return
+
+        const content = contentRef.current
+
+        // 渲染块级公式 $$...$$
+        const blockMathRegex = /\$\$([\s\S]*?)\$\$/g
+        content.innerHTML = content.innerHTML.replace(blockMathRegex, (_match, formula) => {
+            try {
+                return `<div class="math-block">${katex.renderToString(formula.trim(), {
+                    displayMode: true,
+                    throwOnError: false
+                })}</div>`
+            } catch {
+                return `<div class="math-error">LaTeX Error: ${formula}</div>`
+            }
+        })
+
+        // 渲染行内公式 $...$（需要避免匹配已经渲染的块级公式）
+        const inlineMathRegex = /\$([^$\n]+?)\$/g
+        content.innerHTML = content.innerHTML.replace(inlineMathRegex, (_match, formula) => {
+            try {
+                return katex.renderToString(formula.trim(), {
+                    displayMode: false,
+                    throwOnError: false
+                })
+            } catch {
+                return `<span class="math-error">${formula}</span>`
+            }
+        })
     }, [post])
 
     const handleSubmitComment = async (e: React.FormEvent) => {
