@@ -2,6 +2,21 @@ import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import prisma from '../utils/prisma.js'
 
+// HTML 转义函数 - 防止 XSS 攻击
+function escapeHtml(text: string): string {
+    const htmlEntities: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        '/': '&#x2F;',
+        '`': '&#x60;',
+        '=': '&#x3D;'
+    }
+    return text.replace(/[&<>"'`=/]/g, char => htmlEntities[char])
+}
+
 export const commentController = {
     // 创建评论（需要登录）
     async createComment(req: Request, res: Response) {
@@ -10,6 +25,14 @@ export const commentController = {
 
             if (!postId || !content) {
                 return res.status(400).json({ error: '请提供文章 ID 和评论内容' })
+            }
+
+            // XSS 过滤 - HTML 转义
+            const sanitizedContent = escapeHtml(content.trim())
+
+            // 检查转义后内容是否为空
+            if (!sanitizedContent) {
+                return res.status(400).json({ error: '评论内容不能为空' })
             }
 
             // 检查文章是否存在
@@ -39,7 +62,7 @@ export const commentController = {
 
             const comment = await prisma.comment.create({
                 data: {
-                    content,
+                    content: sanitizedContent,  // 使用转义后的内容
                     postId,
                     authorId
                 },
