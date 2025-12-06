@@ -549,6 +549,54 @@ POST /api/admin/posts/batch
 
 ---
 
+#### 获取文章版本历史
+```
+GET /api/admin/posts/:id/versions
+```
+
+**响应**:
+```json
+[
+  {
+    "id": 1,
+    "version": 3,
+    "title": "文章标题",
+    "changeNote": "修改了内容",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "editorId": 1
+  }
+]
+```
+
+---
+
+#### 获取特定版本详情
+```
+GET /api/admin/posts/:id/versions/:versionId
+```
+
+**响应**: 返回该版本的完整内容（title, content, excerpt, published 等）
+
+---
+
+#### 回滚到指定版本
+```
+POST /api/admin/posts/:id/versions/:versionId/rollback
+```
+
+**响应**:
+```json
+{
+  "success": true,
+  "message": "已回滚到版本 2",
+  "post": { ... }
+}
+```
+
+**说明**: 回滚时会先将当前版本保存为新历史版本，然后恢复到目标版本
+
+---
+
 #### 上传文件
 ```
 POST /api/admin/upload

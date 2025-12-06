@@ -47,6 +47,7 @@ model Post {
   
   comments   Comment[]
   tags       Tag[]
+  versions   PostVersion[]  // 版本历史
 }
 
 // 评论模型
@@ -70,4 +71,23 @@ model Tag {
   slug  String @unique
   
   posts Post[]
+}
+
+// 文章版本历史模型
+model PostVersion {
+  id         Int      @id @default(autoincrement())
+  version    Int      // 版本号
+  title      String
+  content    String
+  excerpt    String?
+  coverImage String?
+  published  Boolean
+  isPublic   Boolean
+  changeNote String?  // 修改说明
+  createdAt  DateTime @default(now())
+  
+  postId     Int
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  editorId   Int?     // 编辑者ID
 }

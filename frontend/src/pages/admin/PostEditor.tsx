@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getAdminPost, createPost, updatePost, getTags, createTag } from '../../services/api'
+import { getAdminPost, createPost, updatePost, getTags, createTag, getPostVersions, getPostVersion, rollbackPostVersion } from '../../services/api'
 import './PostEditor.css'
 
 interface Tag {
@@ -18,6 +18,15 @@ interface DraftData {
     isPublic: boolean
     selectedTags: number[]
     savedAt: number
+}
+
+interface VersionInfo {
+    id: number
+    version: number
+    title: string
+    changeNote: string | null
+    createdAt: string
+    editorId: number | null
 }
 
 const DRAFT_KEY = 'post_editor_draft'
@@ -48,6 +57,13 @@ function PostEditor() {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
     const [showDraftPrompt, setShowDraftPrompt] = useState(false)
     const [draftData, setDraftData] = useState<DraftData | null>(null)
+
+    // 版本历史相关状态
+    const [showVersionHistory, setShowVersionHistory] = useState(false)
+    const [versions, setVersions] = useState<VersionInfo[]>([])
+    const [loadingVersions, setLoadingVersions] = useState(false)
+    const [selectedVersion, setSelectedVersion] = useState<any>(null)
+    const [showVersionPreview, setShowVersionPreview] = useState(false)
 
     const autoSaveTimer = useRef<NodeJS.Timeout | null>(null)
     const isInitialLoad = useRef(true)
@@ -296,6 +312,64 @@ function PostEditor() {
         }
     }
 
+    // 版本历史相关函数
+    const loadVersionHistory = async () => {
+        if (!isEditing || !id) return
+
+        setLoadingVersions(true)
+        try {
+            const data = await getPostVersions(parseInt(id))
+            setVersions(data)
+            setShowVersionHistory(true)
+        } catch (error) {
+            console.error('加载版本历史失败:', error)
+        } finally {
+            setLoadingVersions(false)
+        }
+    }
+
+    const previewVersion = async (versionId: number) => {
+        if (!id) return
+
+        try {
+            const version = await getPostVersion(parseInt(id), versionId)
+            setSelectedVersion(version)
+            setShowVersionPreview(true)
+        } catch (error) {
+            console.error('加载版本详情失败:', error)
+        }
+    }
+
+    const handleRollback = async (versionId: number) => {
+        if (!id) return
+        if (!confirm('确定要回滚到此版本吗？当前内容将被保存为新版本。')) return
+
+        try {
+            const result = await rollbackPostVersion(parseInt(id), versionId)
+            alert(result.message)
+            // 重新加载文章
+            fetchPost()
+            setShowVersionHistory(false)
+            setShowVersionPreview(false)
+        } catch (error) {
+            console.error('回滚失败:', error)
+            alert('回滚失败')
+        }
+    }
+
+    const applyVersionToEditor = () => {
+        if (!selectedVersion) return
+
+        setTitle(selectedVersion.title)
+        setContent(selectedVersion.content)
+        setExcerpt(selectedVersion.excerpt || '')
+        setCoverImage(selectedVersion.coverImage || '')
+        setPublished(selectedVersion.published)
+        setIsPublic(selectedVersion.isPublic)
+        setShowVersionPreview(false)
+        setHasUnsavedChanges(true)
+    }
+
     // 格式化保存时间
     const formatSaveTime = (date: Date) => {
         return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -497,6 +571,21 @@ function PostEditor() {
                         </div>
                     </div>
 
+                    {/* 版本历史卡片 - 仅编辑模式显示 */}
+                    {isEditing && (
+                        <div className="sidebar-card version-card">
+                            <h3>版本历史</h3>
+                            <button
+                                type="button"
+                                className="btn btn-secondary version-btn"
+                                onClick={loadVersionHistory}
+                                disabled={loadingVersions}
+                            >
+                                {loadingVersions ? '加载中...' : '📜 查看历史版本'}
+                            </button>
+                        </div>
+                    )}
+
                     <div className="editor-actions">
                         <button type="button" className="btn btn-secondary hover-trigger" onClick={() => navigate('/admin/posts')}>
                             取消
@@ -507,6 +596,86 @@ function PostEditor() {
                     </div>
                 </div>
             </form>
+
+            {/* 版本历史弹窗 */}
+            {showVersionHistory && (
+                <div className="version-modal-overlay" onClick={() => setShowVersionHistory(false)}>
+                    <div className="version-modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>📜 版本历史</h2>
+                            <button className="modal-close" onClick={() => setShowVersionHistory(false)}>×</button>
+                        </div>
+                        <div className="version-list">
+                            {versions.length === 0 ? (
+                                <p className="no-versions">暂无历史版本</p>
+                            ) : (
+                                versions.map(v => (
+                                    <div key={v.id} className="version-item">
+                                        <div className="version-info">
+                                            <span className="version-number">v{v.version}</span>
+                                            <span className="version-title">{v.title}</span>
+                                            <span className="version-date">
+                                                {new Date(v.createdAt).toLocaleString('zh-CN')}
+                                            </span>
+                                            {v.changeNote && (
+                                                <span className="version-note">{v.changeNote}</span>
+                                            )}
+                                        </div>
+                                        <div className="version-actions">
+                                            <button
+                                                className="btn btn-sm"
+                                                onClick={() => previewVersion(v.id)}
+                                            >
+                                                预览
+                                            </button>
+                                            <button
+                                                className="btn btn-sm btn-primary"
+                                                onClick={() => handleRollback(v.id)}
+                                            >
+                                                回滚
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 版本预览弹窗 */}
+            {showVersionPreview && selectedVersion && (
+                <div className="version-modal-overlay" onClick={() => setShowVersionPreview(false)}>
+                    <div className="version-modal version-preview" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>版本 {selectedVersion.version} 预览</h2>
+                            <button className="modal-close" onClick={() => setShowVersionPreview(false)}>×</button>
+                        </div>
+                        <div className="preview-content">
+                            <div className="preview-meta">
+                                <p><strong>标题:</strong> {selectedVersion.title}</p>
+                                <p><strong>状态:</strong> {selectedVersion.published ? '已发布' : '草稿'}</p>
+                                <p><strong>保存时间:</strong> {new Date(selectedVersion.createdAt).toLocaleString('zh-CN')}</p>
+                            </div>
+                            <div className="preview-body">
+                                <h4>内容预览:</h4>
+                                <pre>{selectedVersion.content.substring(0, 500)}...</pre>
+                            </div>
+                        </div>
+                        <div className="preview-actions">
+                            <button className="btn btn-secondary" onClick={() => setShowVersionPreview(false)}>
+                                关闭
+                            </button>
+                            <button className="btn btn-primary" onClick={applyVersionToEditor}>
+                                应用到编辑器
+                            </button>
+                            <button className="btn btn-primary" onClick={() => handleRollback(selectedVersion.id)}>
+                                回滚到此版本
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -243,6 +243,43 @@ export async function batchCreatePosts(posts: Array<{
     })
 }
 
+// 文章版本历史
+export async function getPostVersions(postId: number) {
+    return request<Array<{
+        id: number
+        version: number
+        title: string
+        changeNote: string | null
+        createdAt: string
+        editorId: number | null
+    }>>(`/admin/posts/${postId}/versions`)
+}
+
+export async function getPostVersion(postId: number, versionId: number) {
+    return request<{
+        id: number
+        version: number
+        title: string
+        content: string
+        excerpt: string | null
+        coverImage: string | null
+        published: boolean
+        isPublic: boolean
+        changeNote: string | null
+        createdAt: string
+    }>(`/admin/posts/${postId}/versions/${versionId}`)
+}
+
+export async function rollbackPostVersion(postId: number, versionId: number) {
+    return request<{
+        success: boolean
+        message: string
+        post: any
+    }>(`/admin/posts/${postId}/versions/${versionId}/rollback`, {
+        method: 'POST'
+    })
+}
+
 export async function uploadImage(file: File) {
     const formData = new FormData()
     formData.append('file', file)

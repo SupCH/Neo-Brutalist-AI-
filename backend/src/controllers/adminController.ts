@@ -165,7 +165,50 @@ export const adminController = {
     async updatePost(req: AuthRequest, res: Response) {
         try {
             const id = parseInt(req.params.id)
-            const { title, slug, content, excerpt, coverImage, published, isPublic, tagIds } = req.body
+            const { title, slug, content, excerpt, coverImage, published, isPublic, tagIds, changeNote } = req.body
+            const editorId = req.userId!
+
+            // 获取当前版本用于保存历史
+            const currentPost = await prisma.post.findUnique({
+                where: { id }
+            })
+
+            if (!currentPost) {
+                return res.status(404).json({ error: '文章不存在' })
+            }
+
+            // 检查内容是否有变化
+            const hasChanges =
+                currentPost.title !== title ||
+                currentPost.content !== content ||
+                currentPost.excerpt !== excerpt ||
+                currentPost.coverImage !== coverImage ||
+                currentPost.published !== published ||
+                currentPost.isPublic !== isPublic
+
+            // 如果有变化，保存当前版本到历史
+            if (hasChanges) {
+                const latestVersion = await prisma.postVersion.findFirst({
+                    where: { postId: id },
+                    orderBy: { version: 'desc' }
+                })
+                const newVersionNum = (latestVersion?.version || 0) + 1
+
+                await prisma.postVersion.create({
+                    data: {
+                        postId: id,
+                        version: newVersionNum,
+                        title: currentPost.title,
+                        content: currentPost.content,
+                        excerpt: currentPost.excerpt,
+                        coverImage: currentPost.coverImage,
+                        published: currentPost.published,
+                        isPublic: currentPost.isPublic,
+                        changeNote: changeNote || null,
+                        editorId
+                    }
+                })
+            }
 
             // 先断开所有标签关联
             await prisma.post.update({
@@ -215,6 +258,124 @@ export const adminController = {
         } catch (error) {
             console.error('删除文章失败:', error)
             res.status(500).json({ error: '删除文章失败' })
+        }
+    },
+
+    // 获取文章版本历史
+    async getPostVersions(req: AuthRequest, res: Response) {
+        try {
+            const id = parseInt(req.params.id)
+
+            const versions = await prisma.postVersion.findMany({
+                where: { postId: id },
+                orderBy: { version: 'desc' },
+                select: {
+                    id: true,
+                    version: true,
+                    title: true,
+                    changeNote: true,
+                    createdAt: true,
+                    editorId: true
+                }
+            })
+
+            res.json(versions)
+        } catch (error) {
+            console.error('获取版本历史失败:', error)
+            res.status(500).json({ error: '获取版本历史失败' })
+        }
+    },
+
+    // 获取特定版本详情
+    async getPostVersion(req: AuthRequest, res: Response) {
+        try {
+            const postId = parseInt(req.params.id)
+            const versionId = parseInt(req.params.versionId)
+
+            const version = await prisma.postVersion.findFirst({
+                where: { id: versionId, postId }
+            })
+
+            if (!version) {
+                return res.status(404).json({ error: '版本不存在' })
+            }
+
+            res.json(version)
+        } catch (error) {
+            console.error('获取版本详情失败:', error)
+            res.status(500).json({ error: '获取版本详情失败' })
+        }
+    },
+
+    // 回滚到指定版本
+    async rollbackPostVersion(req: AuthRequest, res: Response) {
+        try {
+            const postId = parseInt(req.params.id)
+            const versionId = parseInt(req.params.versionId)
+            const editorId = req.userId!
+
+            // 获取要回滚的版本
+            const targetVersion = await prisma.postVersion.findFirst({
+                where: { id: versionId, postId }
+            })
+
+            if (!targetVersion) {
+                return res.status(404).json({ error: '版本不存在' })
+            }
+
+            // 获取当前文章
+            const currentPost = await prisma.post.findUnique({
+                where: { id: postId }
+            })
+
+            if (!currentPost) {
+                return res.status(404).json({ error: '文章不存在' })
+            }
+
+            // 保存当前版本到历史（回滚前的备份）
+            const latestVersion = await prisma.postVersion.findFirst({
+                where: { postId },
+                orderBy: { version: 'desc' }
+            })
+            const newVersionNum = (latestVersion?.version || 0) + 1
+
+            await prisma.postVersion.create({
+                data: {
+                    postId,
+                    version: newVersionNum,
+                    title: currentPost.title,
+                    content: currentPost.content,
+                    excerpt: currentPost.excerpt,
+                    coverImage: currentPost.coverImage,
+                    published: currentPost.published,
+                    isPublic: currentPost.isPublic,
+                    changeNote: `回滚前备份 (将回滚到版本 ${targetVersion.version})`,
+                    editorId
+                }
+            })
+
+            // 更新文章为目标版本内容
+            const updatedPost = await prisma.post.update({
+                where: { id: postId },
+                data: {
+                    title: targetVersion.title,
+                    content: targetVersion.content,
+                    excerpt: targetVersion.excerpt,
+                    coverImage: targetVersion.coverImage,
+                    published: targetVersion.published,
+                    isPublic: targetVersion.isPublic
+                },
+                include: { tags: true }
+            })
+
+            res.json({
+                success: true,
+                message: `已回滚到版本 ${targetVersion.version}`,
+                post: updatedPost
+            })
+        } catch (error) {
+            console.error('回滚版本失败:', error)
+            res.status(500).json({ error: '回滚版本失败' })
         }
     },
 
