@@ -389,3 +389,73 @@
     color: #999;
     font-family: var(--font-mono);
 }
+
+/* Code Block Wrapper */
+.code-block-wrapper {
+    margin: 1.5rem 0;
+    border: 4px solid var(--neo-black);
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: var(--shadow-hard);
+}
+
+.code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: #1e1e1e;
+    border-bottom: 2px solid var(--acid-green);
+}
+
+.code-lang {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--acid-green);
+    letter-spacing: 0.05em;
+}
+
+.code-copy-btn {
+    padding: 0.25rem 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    background-color: transparent;
+    color: #888;
+    border: 1px solid #444;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.code-copy-btn:hover {
+    background-color: var(--acid-green);
+    color: var(--neo-black);
+    border-color: var(--acid-green);
+}
+
+.code-copy-btn.copied {
+    background-color: var(--acid-green);
+    color: var(--neo-black);
+    border-color: var(--acid-green);
+}
+
+/* 覆盖 highlight.js 默认样式以适配包装器 */
+.code-block-wrapper pre {
+    margin: 0 !important;
+    border: none !important;
+    border-left: 8px solid var(--acid-green) !important;
+    border-radius: 0;
+}
+
+.code-block-wrapper pre code {
+    display: block;
+    padding: 1rem 1.5rem !important;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+/* 优化 hljs 主题适配 */
+.post-content .hljs {
+    background: #282c34;
+}

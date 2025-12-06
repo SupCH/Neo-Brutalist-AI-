@@ -1,6 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { marked } from 'marked'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/atom-one-dark.css'
 import { getPost, createComment, isAuthenticated, deleteOwnComment, getCurrentUser } from '../services/api'
 import NotFound from './NotFound'
 import TableOfContents from '../components/TableOfContents'
@@ -45,6 +47,7 @@ function PostDetail() {
     const [loading, setLoading] = useState(true)
     const [commentContent, setCommentContent] = useState('')
     const [submitting, setSubmitting] = useState(false)
+    const contentRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -60,6 +63,67 @@ function PostDetail() {
         }
         fetchPost()
     }, [slug])
+
+    // 复制代码函数
+    const copyCode = useCallback((code: string, button: HTMLButtonElement) => {
+        navigator.clipboard.writeText(code).then(() => {
+            const originalText = button.textContent
+            button.textContent = '已复制!'
+            button.classList.add('copied')
+            setTimeout(() => {
+                button.textContent = originalText
+                button.classList.remove('copied')
+            }, 2000)
+        }).catch(err => {
+            console.error('复制失败:', err)
+            button.textContent = '复制失败'
+        })
+    }, [])
+
+    // 代码高亮和添加复制按钮
+    useEffect(() => {
+        if (!contentRef.current || !post) return
+
+        const codeBlocks = contentRef.current.querySelectorAll('pre code')
+
+        codeBlocks.forEach((block) => {
+            // 应用语法高亮
+            hljs.highlightElement(block as HTMLElement)
+
+            // 检查是否已经添加了复制按钮
+            const pre = block.parentElement
+            if (!pre || pre.querySelector('.code-copy-btn')) return
+
+            // 创建代码块头部
+            const header = document.createElement('div')
+            header.className = 'code-header'
+
+            // 获取语言
+            const langClass = block.className.match(/language-(\w+)/)
+            const lang = langClass ? langClass[1] : 'code'
+
+            // 语言标签
+            const langLabel = document.createElement('span')
+            langLabel.className = 'code-lang'
+            langLabel.textContent = lang.toUpperCase()
+
+            // 复制按钮
+            const copyBtn = document.createElement('button')
+            copyBtn.className = 'code-copy-btn'
+            copyBtn.textContent = '复制'
+            copyBtn.onclick = () => copyCode(block.textContent || '', copyBtn)
+
+            header.appendChild(langLabel)
+            header.appendChild(copyBtn)
+
+            // 包装代码块
+            const wrapper = document.createElement('div')
+            wrapper.className = 'code-block-wrapper'
+            pre.parentNode?.insertBefore(wrapper, pre)
+            wrapper.appendChild(header)
+            wrapper.appendChild(pre)
+        })
+    }, [post, copyCode])
 
     const handleSubmitComment = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -151,7 +215,7 @@ function PostDetail() {
                 </header>
 
                 {/* Article Content */}
-                <div className="post-content" dangerouslySetInnerHTML={{ __html: parsedContent }} />
+                <div ref={contentRef} className="post-content" dangerouslySetInnerHTML={{ __html: parsedContent }} />
 
                 {/* Tags Footer */}
                 <div className="post-footer">
