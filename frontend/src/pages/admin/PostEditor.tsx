@@ -1,8 +1,12 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getAdminPost, createPost, updatePost, getTags, createTag, getPostVersions, getPostVersion, rollbackPostVersion, generateTags } from '../../services/api'
-import { marked } from 'marked'
-import katex from 'katex'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+// import { marked } from 'marked'
+// import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import './PostEditor.css'
 
@@ -578,40 +582,14 @@ function PostEditor() {
                             {previewMode !== 'edit' && (
                                 <div className="preview-pane">
                                     <div className="preview-label">预览</div>
-                                    <div
-                                        className="preview-content post-content"
-                                        dangerouslySetInnerHTML={{
-                                            __html: useMemo(() => {
-                                                let html = marked.parse(content || '') as string
-
-                                                // 渲染块级公式 $$...$$
-                                                html = html.replace(/\$\$([\s\S]*?)\$\$/g, (_match, formula) => {
-                                                    try {
-                                                        return `<div class="math-block">${katex.renderToString(formula.trim(), {
-                                                            displayMode: true,
-                                                            throwOnError: false
-                                                        })}</div>`
-                                                    } catch {
-                                                        return `<div class="math-error">LaTeX Error</div>`
-                                                    }
-                                                })
-
-                                                // 渲染行内公式 $...$
-                                                html = html.replace(/\$([^$\n]+?)\$/g, (_match, formula) => {
-                                                    try {
-                                                        return katex.renderToString(formula.trim(), {
-                                                            displayMode: false,
-                                                            throwOnError: false
-                                                        })
-                                                    } catch {
-                                                        return formula
-                                                    }
-                                                })
-
-                                                return html
-                                            }, [content])
-                                        }}
-                                    />
+                                    <div className="preview-content post-content">
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm, remarkMath]}
+                                            rehypePlugins={[rehypeKatex]}
+                                        >
+                                            {content || ''}
+                                        </ReactMarkdown>
+                                    </div>
                                 </div>
                             )}
                         </div>
