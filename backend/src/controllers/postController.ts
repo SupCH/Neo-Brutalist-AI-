@@ -9,20 +9,31 @@ export const postController = {
             const limit = parseInt(req.query.limit as string) || 10
             const skip = (page - 1) * limit
 
-            const posts = await prisma.post.findMany({
-                where: { published: true, isPublic: true },
-                include: {
-                    author: {
-                        select: { id: true, name: true, avatar: true }
+            const [total, posts] = await Promise.all([
+                prisma.post.count({ where: { published: true, isPublic: true } }),
+                prisma.post.findMany({
+                    where: { published: true, isPublic: true },
+                    include: {
+                        author: {
+                            select: { id: true, name: true, avatar: true }
+                        },
+                        tags: true,
                     },
-                    tags: true,
-                },
-                orderBy: { createdAt: 'desc' },
-                skip,
-                take: limit,
-            })
+                    orderBy: { createdAt: 'desc' },
+                    skip,
+                    take: limit,
+                })
+            ])
 
-            res.json(posts)
+            res.json({
+                data: posts,
+                meta: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit)
+                }
+            })
         } catch (error) {
             console.error('获取文章列表失败:', error)
             res.status(500).json({ error: '获取文章列表失败' })

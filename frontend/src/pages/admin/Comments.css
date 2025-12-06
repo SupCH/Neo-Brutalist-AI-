@@ -184,3 +184,26 @@
         background-position: -200% 0;
     }
 }
+
+.checkbox-cell {
+    width: 40px;
+    text-align: center;
+}
+
+.selected-row {
+    background-color: var(--surface-hover);
+}
+
+.batch-delete-btn {
+    margin-left: auto;
+    background-color: var(--danger);
+    color: white;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    justify-content: flex-end;
+}

@@ -219,8 +219,10 @@ POST /api/comments
 ```json
 {
   "postId": 1,
-  "content": "评论内容"
+  "content": "评论内容",
+  "parentId": 2 // 可选：回复的父评论 ID
 }
+
 ```
 
 **响应**: 返回创建的评论，包含作者信息

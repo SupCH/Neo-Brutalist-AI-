@@ -60,11 +60,26 @@ export const commentController = {
                 return res.status(401).json({ error: '登录已过期，请重新登录' })
             }
 
+            // 检查 parentId (如果是回复评论)
+            const parentId = req.body.parentId ? parseInt(req.body.parentId) : null
+            if (parentId) {
+                const parentComment = await prisma.comment.findUnique({
+                    where: { id: parentId }
+                })
+                if (!parentComment) {
+                    return res.status(404).json({ error: '回复的评论不存在' })
+                }
+                if (parentComment.postId !== Number(postId)) {
+                    return res.status(400).json({ error: '无法跨文章回复' })
+                }
+            }
+
             const comment = await prisma.comment.create({
                 data: {
                     content: sanitizedContent,  // 使用转义后的内容
-                    postId,
-                    authorId
+                    postId: Number(postId),
+                    authorId,
+                    parentId
                 },
                 include: {
                     author: {
@@ -83,19 +98,36 @@ export const commentController = {
     // 获取全部评论（管理用，需要 ADMIN+ 权限）
     async getComments(req: Request, res: Response) {
         try {
-            const comments = await prisma.comment.findMany({
-                include: {
-                    author: {
-                        select: { id: true, name: true, email: true }
-                    },
-                    post: {
-                        select: { id: true, title: true, slug: true }
-                    }
-                },
-                orderBy: { createdAt: 'desc' }
-            })
+            const page = parseInt(req.query.page as string) || 1
+            const limit = parseInt(req.query.limit as string) || 20
+            const skip = (page - 1) * limit
 
-            res.json(comments)
+            const [total, comments] = await Promise.all([
+                prisma.comment.count(),
+                prisma.comment.findMany({
+                    include: {
+                        author: {
+                            select: { id: true, name: true, email: true }
+                        },
+                        post: {
+                            select: { id: true, title: true, slug: true }
+                        }
+                    },
+                    orderBy: { createdAt: 'desc' },
+                    skip,
+                    take: limit
+                })
+            ])
+
+            res.json({
+                data: comments,
+                meta: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit)
+                }
+            })
         } catch (error) {
             console.error('获取评论失败:', error)
             res.status(500).json({ error: '获取评论失败' })

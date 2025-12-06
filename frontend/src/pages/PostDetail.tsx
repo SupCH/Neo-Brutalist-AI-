@@ -34,6 +34,7 @@ interface PostDetailData {
     comments: Array<{
         id: number
         content: string
+        parentId?: number | null
         isDeleted?: boolean
         createdAt: string
         author: {
@@ -51,6 +52,8 @@ function PostDetail() {
     const [commentContent, setCommentContent] = useState('')
     const [submitting, setSubmitting] = useState(false)
     const contentRef = useRef<HTMLDivElement>(null)
+
+    const [replyTo, setReplyTo] = useState<number | null>(null)
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -217,14 +220,18 @@ function PostDetail() {
         })
     }, [post])
 
-    const handleSubmitComment = async (e: React.FormEvent) => {
+    const handleSubmitComment = async (e: React.FormEvent, parentId?: number) => {
         e.preventDefault()
-        if (!post || !commentContent.trim()) return
+        if (!post) return
+
+        const content = parentId ? commentContent : commentContent
+        if (!content.trim()) return
 
         setSubmitting(true)
         try {
-            await createComment(post.id, commentContent)
+            await createComment(post.id, content, parentId)
             setCommentContent('')
+            if (parentId) setReplyTo(null)
             const data = await getPost(post.slug)
             setPost(data)
         } catch (error) {
@@ -239,6 +246,138 @@ function PostDetail() {
         if (!post) return ''
         return marked.parse(post.content) as string
     }, [post])
+
+    // 构建评论树
+    const commentTree = useMemo(() => {
+        if (!post?.comments) return []
+
+        const map = new Map<number, any>()
+        const roots: any[] = []
+
+        // 初始化 Map
+        post.comments.forEach(comment => {
+            map.set(comment.id, { ...comment, replies: [] })
+        })
+
+        // 构建树
+        post.comments.forEach(comment => {
+            const node = map.get(comment.id)
+            if (comment.parentId) {
+                const parent = map.get(comment.parentId)
+                if (parent) {
+                    parent.replies.push(node)
+                } else {
+                    // 如果父评论找不到（可能被硬删除），作为根评论或忽略
+                    // 这里选择作为根评论显示，避免数据丢失
+                    roots.push(node)
+                }
+            } else {
+                roots.push(node)
+            }
+        })
+
+        return roots
+    }, [post?.comments])
+
+    // 递归渲染评论组件
+    const CommentNode = ({ comment }: { comment: any }) => {
+        const isReplying = replyTo === comment.id
+
+        return (
+            <div className={`comment-item ${comment.isDeleted ? 'deleted' : ''}`}>
+                {comment.isDeleted ? (
+                    <p className="deleted-message">此评论已被删除</p>
+                ) : (
+                    <>
+                        <div className="comment-header">
+                            {comment.author ? (
+                                <Link to={`/user/${comment.author.id}`} className="comment-author">
+                                    {comment.author.name} <span className="uid-badge">UID:{comment.author.id}</span>
+                                </Link>
+                            ) : (
+                                <span className="comment-author deleted-user">已注销用户</span>
+                            )}
+                            <span className="comment-date">
+                                {new Date(comment.createdAt).toLocaleDateString('en-CA')}
+                            </span>
+
+                            <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px' }}>
+                                {isAuthenticated() && !comment.isDeleted && (
+                                    <button
+                                        className="comment-reply-btn"
+                                        onClick={() => setReplyTo(isReplying ? null : comment.id)}
+                                    >
+                                        回复
+                                    </button>
+                                )}
+
+                                {isAuthenticated() && (() => {
+                                    const currentUser = getCurrentUser()
+                                    const canDelete = currentUser && (
+                                        comment.author?.id === currentUser.userId ||
+                                        currentUser.role === 'SUPER_ADMIN'
+                                    )
+                                    return canDelete ? (
+                                        <button
+                                            className="comment-delete-btn"
+                                            onClick={async () => {
+                                                if (!confirm('确定要删除这条评论吗？')) return
+                                                try {
+                                                    await deleteOwnComment(comment.id)
+                                                    const data = await getPost(post!.slug)
+                                                    setPost(data)
+                                                } catch (error) {
+                                                    console.error('删除评论失败:', error)
+                                                    alert('删除评论失败')
+                                                }
+                                            }}
+                                        >
+                                            删除
+                                        </button>
+                                    ) : null
+                                })()}
+                            </div>
+                        </div>
+                        <p className="comment-content">{comment.content}</p>
+
+                        {/* 回复框 */}
+                        {isReplying && (
+                            <div className="reply-form-container">
+                                <div className="reply-form-header">
+                                    <span>回复 @{comment.author?.name || '用户'}</span>
+                                    <button className="cancel-reply-btn" onClick={() => setReplyTo(null)}>取消</button>
+                                </div>
+                                <form onSubmit={(e) => handleSubmitComment(e, comment.id)}>
+                                    <textarea
+                                        className="comment-input"
+                                        placeholder="请输入回复内容..."
+                                        rows={3}
+                                        value={commentContent}
+                                        onChange={(e) => setCommentContent(e.target.value)}
+                                        required
+                                        autoFocus
+                                        style={{ marginBottom: '10px' }}
+                                    />
+                                    <button type="submit" className="btn btn-primary" disabled={submitting}>
+                                        {submitting ? '回复中...' : '提交回复'}
+                                    </button>
+                                </form>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {/* 递归渲染子评论 */}
+                {comment.replies && comment.replies.length > 0 && (
+                    <div className="comment-replies">
+                        {comment.replies.map((reply: any) => (
+                            <CommentNode key={reply.id} comment={reply} />
+                        ))}
+                    </div>
+                )}
+            </div>
+        )
+    }
 
     if (loading) {
         return (
@@ -333,19 +472,22 @@ function PostDetail() {
                     </h3>
 
                     {isAuthenticated() ? (
-                        <form className="comment-form" onSubmit={handleSubmitComment}>
+                        <form className="comment-form" onSubmit={(e) => handleSubmitComment(e)}>
                             <div className="form-group">
                                 <label className="form-label">留下你的想法</label>
                                 <textarea
                                     className="comment-input"
                                     placeholder="Wake up, Neo..."
                                     rows={4}
-                                    value={commentContent}
-                                    onChange={(e) => setCommentContent(e.target.value)}
-                                    required
+                                    value={replyTo === null ? commentContent : ''} // 如果正在回复具体某条评论，清除主输入框
+                                    onChange={(e) => {
+                                        setReplyTo(null) // 输入主框时取消回复模式
+                                        setCommentContent(e.target.value)
+                                    }}
+                                    required={replyTo === null}
                                 />
                             </div>
-                            <button type="submit" className="btn btn-primary" disabled={submitting}>
+                            <button type="submit" className="btn btn-primary" disabled={submitting || replyTo !== null}>
                                 {submitting ? '发送中...' : '发送数据包'}
                             </button>
                         </form>
@@ -356,57 +498,11 @@ function PostDetail() {
                     )}
 
                     <div className="comments-list">
-                        {post.comments.length === 0 ? (
+                        {commentTree.length === 0 ? (
                             <p className="no-comments">// 暂无评论，成为第一个发言者</p>
                         ) : (
-                            post.comments.map(comment => (
-                                <div key={comment.id} className={`comment-item ${comment.isDeleted ? 'deleted' : ''}`}>
-                                    {comment.isDeleted ? (
-                                        <p className="deleted-message">此评论已被删除</p>
-                                    ) : (
-                                        <>
-                                            <div className="comment-header">
-                                                {comment.author ? (
-                                                    <Link to={`/user/${comment.author.id}`} className="comment-author">
-                                                        {comment.author.name} <span className="uid-badge">UID:{comment.author.id}</span>
-                                                    </Link>
-                                                ) : (
-                                                    <span className="comment-author deleted-user">已注销用户</span>
-                                                )}
-                                                <span className="comment-date">
-                                                    {new Date(comment.createdAt).toLocaleDateString('en-CA')}
-                                                </span>
-                                                {/* 显示删除按钮：评论作者本人 或 超级管理员 */}
-                                                {isAuthenticated() && (() => {
-                                                    const currentUser = getCurrentUser()
-                                                    const canDelete = currentUser && (
-                                                        comment.author?.id === currentUser.userId ||
-                                                        currentUser.role === 'SUPER_ADMIN'
-                                                    )
-                                                    return canDelete ? (
-                                                        <button
-                                                            className="comment-delete-btn"
-                                                            onClick={async () => {
-                                                                if (!confirm('确定要删除这条评论吗？')) return
-                                                                try {
-                                                                    await deleteOwnComment(comment.id)
-                                                                    const data = await getPost(post.slug)
-                                                                    setPost(data)
-                                                                } catch (error) {
-                                                                    console.error('删除评论失败:', error)
-                                                                    alert('删除评论失败')
-                                                                }
-                                                            }}
-                                                        >
-                                                            删除
-                                                        </button>
-                                                    ) : null
-                                                })()}
-                                            </div>
-                                            <p className="comment-content">{comment.content}</p>
-                                        </>
-                                    )}
-                                </div>
+                            commentTree.map((comment: any) => (
+                                <CommentNode key={comment.id} comment={comment} />
                             ))
                         )}
                     </div>

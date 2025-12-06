@@ -89,7 +89,7 @@ function PostEditor() {
     const [versions, setVersions] = useState<VersionInfo[]>([])
     const [loadingVersions, setLoadingVersions] = useState(false)
 
-    const autoSaveTimer = useRef<NodeJS.Timeout | null>(null)
+    const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
     const isInitialLoad = useRef(true)
 
     // 生成草稿存储键

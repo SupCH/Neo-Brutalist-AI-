@@ -484,3 +484,65 @@
 .post-content .hljs {
     background: #282c34;
 }
+
+/* Nested Comments */
+.comment-replies {
+    margin-left: 1.5rem;
+    border-left: 2px solid #e5e7eb;
+    padding-left: 1rem;
+    margin-top: 1rem;
+}
+
+.comment-reply-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #6d28d9;
+    font-weight: 500;
+    padding: 0;
+    margin-left: 1rem;
+    transition: color 0.2s;
+}
+
+.comment-reply-btn:hover {
+    color: #4c1d95;
+    text-decoration: underline;
+}
+
+.reply-form-container {
+    margin-top: 1rem;
+    background: #f8fafc;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 4px;
+}
+
+.reply-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.cancel-reply-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ef4444;
+    font-size: 0.85rem;
+}
+
+.cancel-reply-btn:hover {
+    text-decoration: underline;
+}
+
+/* Mobile responsive for nested comments */
+@media (max-width: 640px) {
+    .comment-replies {
+        margin-left: 0.75rem;
+        padding-left: 0.75rem;
+    }
+}

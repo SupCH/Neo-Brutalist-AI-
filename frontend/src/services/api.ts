@@ -56,8 +56,18 @@ export function getCurrentUser(): { userId: number; role: string } | null {
 }
 
 // Public API
+export interface PaginatedResponse<T> {
+    data: T[]
+    meta: {
+        total: number
+        page: number
+        limit: number
+        totalPages: number
+    }
+}
+
 export async function getPosts(page = 1, limit = 10) {
-    return request<any[]>(`/posts?page=${page}&limit=${limit}`)
+    return request<PaginatedResponse<any>>(`/posts?page=${page}&limit=${limit}`)
 }
 
 export async function recordView(id: number, isNewVisitor: boolean) {
@@ -96,10 +106,10 @@ export async function deleteTag(id: number) {
     })
 }
 
-export async function createComment(postId: number, content: string) {
+export async function createComment(postId: number, content: string, parentId?: number) {
     return request<any>('/comments', {
         method: 'POST',
-        body: JSON.stringify({ postId, content }),
+        body: JSON.stringify({ postId, content, parentId }),
     })
 }
 
@@ -207,8 +217,8 @@ export function isAuthenticated() {
 }
 
 // Admin API
-export async function getAdminPosts() {
-    return request<any[]>('/admin/posts')
+export async function getAdminPosts(page = 1, limit = 10) {
+    return request<PaginatedResponse<any>>(`/admin/posts?page=${page}&limit=${limit}`)
 }
 
 export async function getAdminPost(id: number) {
@@ -361,8 +371,8 @@ export async function deleteUser(userId: number) {
 }
 
 // Comment management (ADMIN+)
-export async function getAdminComments() {
-    return request<any[]>('/admin/comments')
+export async function getAdminComments(page = 1, limit = 20) {
+    return request<PaginatedResponse<any>>(`/admin/comments?page=${page}&limit=${limit}`)
 }
 
 export async function deleteComment(commentId: number) {

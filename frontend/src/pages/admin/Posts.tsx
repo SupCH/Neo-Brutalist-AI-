@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getAdminPosts, deletePost, batchCreatePosts } from '../../services/api'
+import Pagination from '../../components/Pagination'
 import './Posts.css'
 
 interface Post {
@@ -29,6 +30,9 @@ interface UploadedFile {
 function Posts() {
     const [posts, setPosts] = useState<Post[]>([])
     const [loading, setLoading] = useState(true)
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [limit] = useState(10)
     const [searchParams, setSearchParams] = useSearchParams()
     const statusFilter = searchParams.get('status')
 
@@ -39,13 +43,17 @@ function Posts() {
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        fetchPosts()
-    }, [])
+        fetchPosts(page)
+    }, [page])
 
-    const fetchPosts = async () => {
+    const fetchPosts = async (currentPage: number) => {
+        setLoading(true)
         try {
-            const data = await getAdminPosts()
-            setPosts(data)
+            const response = await getAdminPosts(currentPage, limit)
+            // @ts-ignore - Handle PaginatedResponse
+            setPosts(response.data)
+            // @ts-ignore
+            setTotalPages(response.meta.totalPages)
         } catch (error) {
             console.error('获取文章失败:', error)
         } finally {
@@ -205,7 +213,7 @@ function Posts() {
             setUploadedFiles([])
             setShowUploadModal(false)
             // 刷新文章列表
-            fetchPosts()
+            fetchPosts(page)
         } catch (error: any) {
             console.error('批量创建失败:', error)
             alert(error.message || '批量创建失败')
@@ -321,94 +329,104 @@ function Posts() {
                         </tbody>
                     </table>
                 )}
+
+                <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                    loading={loading}
+                />
             </div>
 
+
             {/* 批量上传弹窗 */}
-            {showUploadModal && (
-                <div className="upload-modal-overlay" onClick={() => setShowUploadModal(false)}>
-                    <div className="upload-modal" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>&gt;_ 批量导入 Markdown</h2>
-                            <button className="modal-close" onClick={() => setShowUploadModal(false)}>×</button>
-                        </div>
+            {
+                showUploadModal && (
+                    <div className="upload-modal-overlay" onClick={() => setShowUploadModal(false)}>
+                        <div className="upload-modal" onClick={e => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h2>&gt;_ 批量导入 Markdown</h2>
+                                <button className="modal-close" onClick={() => setShowUploadModal(false)}>×</button>
+                            </div>
 
-                        <div className="modal-actions">
-                            <button className="action-btn-sm" onClick={toggleSelectAll}>
-                                {uploadedFiles.every(f => f.selected) ? '取消全选' : '全选'}
-                            </button>
-                            <button className="action-btn-sm publish" onClick={publishAll}>
-                                全部发布
-                            </button>
-                            <button className="action-btn-sm draft" onClick={draftAll}>
-                                全部存草稿
-                            </button>
-                            <label className="action-btn-sm add-more">
-                                + 添加更多
-                                <input
-                                    type="file"
-                                    accept=".md"
-                                    multiple
-                                    onChange={handleFileSelect}
-                                    style={{ display: 'none' }}
-                                />
-                            </label>
-                        </div>
+                            <div className="modal-actions">
+                                <button className="action-btn-sm" onClick={toggleSelectAll}>
+                                    {uploadedFiles.every(f => f.selected) ? '取消全选' : '全选'}
+                                </button>
+                                <button className="action-btn-sm publish" onClick={publishAll}>
+                                    全部发布
+                                </button>
+                                <button className="action-btn-sm draft" onClick={draftAll}>
+                                    全部存草稿
+                                </button>
+                                <label className="action-btn-sm add-more">
+                                    + 添加更多
+                                    <input
+                                        type="file"
+                                        accept=".md"
+                                        multiple
+                                        onChange={handleFileSelect}
+                                        style={{ display: 'none' }}
+                                    />
+                                </label>
+                            </div>
 
-                        <div className="upload-file-list">
-                            {uploadedFiles.map(file => (
-                                <div key={file.id} className={`upload-file-item ${file.selected ? 'selected' : ''}`}>
-                                    <label className="file-checkbox">
-                                        <input
-                                            type="checkbox"
-                                            checked={file.selected}
-                                            onChange={() => toggleFileSelect(file.id)}
-                                        />
-                                        <span className="checkmark"></span>
-                                    </label>
-                                    <div className="file-info">
-                                        <div className="file-title">{file.title}</div>
-                                        <div className="file-meta">
-                                            <span className="file-name">{file.fileName}</span>
-                                            <span className="file-excerpt">{file.excerpt.substring(0, 60)}...</span>
+                            <div className="upload-file-list">
+                                {uploadedFiles.map(file => (
+                                    <div key={file.id} className={`upload-file-item ${file.selected ? 'selected' : ''}`}>
+                                        <label className="file-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                checked={file.selected}
+                                                onChange={() => toggleFileSelect(file.id)}
+                                            />
+                                            <span className="checkmark"></span>
+                                        </label>
+                                        <div className="file-info">
+                                            <div className="file-title">{file.title}</div>
+                                            <div className="file-meta">
+                                                <span className="file-name">{file.fileName}</span>
+                                                <span className="file-excerpt">{file.excerpt.substring(0, 60)}...</span>
+                                            </div>
+                                        </div>
+                                        <div className="file-actions">
+                                            <button
+                                                className={`publish-toggle ${file.publish ? 'will-publish' : 'will-draft'}`}
+                                                onClick={() => togglePublish(file.id)}
+                                            >
+                                                {file.publish ? '发布' : '草稿'}
+                                            </button>
+                                            <button className="remove-btn" onClick={() => removeFile(file.id)}>
+                                                ×
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="file-actions">
-                                        <button
-                                            className={`publish-toggle ${file.publish ? 'will-publish' : 'will-draft'}`}
-                                            onClick={() => togglePublish(file.id)}
-                                        >
-                                            {file.publish ? '发布' : '草稿'}
-                                        </button>
-                                        <button className="remove-btn" onClick={() => removeFile(file.id)}>
-                                            ×
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="modal-footer">
-                            <div className="upload-summary">
-                                已选择 <strong>{uploadedFiles.filter(f => f.selected).length}</strong> / {uploadedFiles.length} 个文件
-                                （<span className="publish-count">{uploadedFiles.filter(f => f.selected && f.publish).length} 发布</span>，
-                                <span className="draft-count">{uploadedFiles.filter(f => f.selected && !f.publish).length} 草稿</span>）
+                                ))}
                             </div>
-                            <div className="modal-buttons">
-                                <button className="btn btn-secondary" onClick={() => setShowUploadModal(false)}>
-                                    取消
-                                </button>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={handleSubmitUpload}
-                                    disabled={uploading || uploadedFiles.filter(f => f.selected).length === 0}
-                                >
-                                    {uploading ? '正在导入...' : '确认导入'}
-                                </button>
+
+                            <div className="modal-footer">
+                                <div className="upload-summary">
+                                    已选择 <strong>{uploadedFiles.filter(f => f.selected).length}</strong> / {uploadedFiles.length} 个文件
+                                    （<span className="publish-count">{uploadedFiles.filter(f => f.selected && f.publish).length} 发布</span>，
+                                    <span className="draft-count">{uploadedFiles.filter(f => f.selected && !f.publish).length} 草稿</span>）
+                                </div>
+                                <div className="modal-buttons">
+                                    <button className="btn btn-secondary" onClick={() => setShowUploadModal(false)}>
+                                        取消
+                                    </button>
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={handleSubmitUpload}
+                                        disabled={uploading || uploadedFiles.filter(f => f.selected).length === 0}
+                                    >
+                                        {uploading ? '正在导入...' : '确认导入'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
         </div>
     )
 }

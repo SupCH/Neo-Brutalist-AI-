@@ -24,6 +24,9 @@ const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)]
 function Home() {
     const [posts, setPosts] = useState<Post[]>([])
     const [loading, setLoading] = useState(true)
+    const [page, setPage] = useState(1)
+    const [hasMore, setHasMore] = useState(true)
+    const [loadingMore, setLoadingMore] = useState(false)
     const [greeting] = useState(randomGreeting)
     const [randomLoading, setRandomLoading] = useState(false)
     const navigate = useNavigate()
@@ -31,8 +34,9 @@ function Home() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const data = await getPosts()
-                setPosts(data)
+                const response = await getPosts(1)
+                setPosts(response.data)
+                setHasMore(response.meta.page < response.meta.totalPages)
             } catch (error) {
                 console.error('获取文章失败:', error)
             } finally {
@@ -41,6 +45,22 @@ function Home() {
         }
         fetchPosts()
     }, [])
+
+    const handleLoadMore = async () => {
+        if (loadingMore || !hasMore) return
+        setLoadingMore(true)
+        try {
+            const nextPage = page + 1
+            const response = await getPosts(nextPage)
+            setPosts(prev => [...prev, ...response.data])
+            setPage(nextPage)
+            setHasMore(response.meta.page < response.meta.totalPages)
+        } catch (error) {
+            console.error('加载更多文章失败:', error)
+        } finally {
+            setLoadingMore(false)
+        }
+    }
 
     const handleRandomPost = async () => {
         setRandomLoading(true)
@@ -155,11 +175,25 @@ function Home() {
                         ))}
                     </div>
                 ) : posts.length > 0 ? (
-                    <div className="posts-grid">
-                        {posts.map((post) => (
-                            <PostCard key={post.id} post={post} />
-                        ))}
-                    </div>
+                    <>
+                        <div className="posts-grid">
+                            {posts.map((post) => (
+                                <PostCard key={post.id} post={post} />
+                            ))}
+                        </div>
+                        {hasMore && (
+                            <div className="load-more-container" style={{ textAlign: 'center', marginTop: '2rem' }}>
+                                <button
+                                    className="btn btn-secondary hover-trigger"
+                                    onClick={handleLoadMore}
+                                    disabled={loadingMore}
+                                    style={{ width: '100%', maxWidth: '300px', padding: '1rem', border: '3px solid black', fontWeight: 'bold' }}
+                                >
+                                    {loadingMore ? '加载数据包...' : 'LOAD MORE DATA'}
+                                </button>
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <div className="empty-state">
                         <p>// 暂无数据，敬请期待...</p>

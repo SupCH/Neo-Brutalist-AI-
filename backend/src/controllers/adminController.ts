@@ -42,24 +42,40 @@ export const adminController = {
         try {
             const userId = req.userId!
             const isAdmin = req.userRole === 'ADMIN' || req.userRole === 'SUPER_ADMIN'
+            const page = parseInt(req.query.page as string) || 1
+            const limit = parseInt(req.query.limit as string) || 10
+            const skip = (page - 1) * limit
 
             // 管理员可以看到所有文章，普通用户只能看到自己的
             const whereClause = isAdmin ? {} : { authorId: userId }
 
-            const posts = await prisma.post.findMany({
-                where: whereClause,
-                include: {
-                    _count: {
-                        select: { comments: true }
+            const [total, posts] = await Promise.all([
+                prisma.post.count({ where: whereClause }),
+                prisma.post.findMany({
+                    where: whereClause,
+                    include: {
+                        _count: {
+                            select: { comments: true }
+                        },
+                        author: {
+                            select: { id: true, name: true }
+                        }
                     },
-                    author: {
-                        select: { id: true, name: true }
-                    }
-                },
-                orderBy: { createdAt: 'desc' }
-            })
+                    orderBy: { createdAt: 'desc' },
+                    skip,
+                    take: limit
+                })
+            ])
 
-            res.json(posts)
+            res.json({
+                data: posts,
+                meta: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit)
+                }
+            })
         } catch (error) {
             console.error('获取文章列表失败:', error)
             res.status(500).json({ error: '获取文章列表失败' })

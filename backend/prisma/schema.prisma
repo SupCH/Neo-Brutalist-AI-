@@ -63,6 +63,10 @@ model Comment {
   
   authorId  Int?
   author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  parentId  Int?
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
 }
 
 // 标签模型
