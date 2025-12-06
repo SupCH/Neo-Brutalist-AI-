@@ -31,7 +31,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     if (!response.ok) {
         // Construct error object similar to what axios/fetch would expect if we want to keep consistency
         // or just throw the data if it has error info
-        const error: any = new Error(data.message || `HTTP error! status: ${response.status}`)
+        const error: any = new Error(data.error || data.message || `HTTP error! status: ${response.status}`)
         error.response = {
             status: response.status,
             data: data
@@ -77,9 +77,15 @@ export async function getTagPosts(slug: string) {
 }
 
 export async function createTag(name: string) {
-    return request<any>('/tags', {
+    return request<any>(`/tags`, {
         method: 'POST',
         body: JSON.stringify({ name }),
+    })
+}
+
+export async function deleteTag(id: number) {
+    return request<any>(`/admin/tags/${id}`, {
+        method: 'DELETE',
     })
 }
 

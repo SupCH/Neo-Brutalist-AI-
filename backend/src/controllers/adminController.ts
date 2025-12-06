@@ -405,9 +405,10 @@ export const adminController = {
 
             const apiUrl = process.env.AI_API_URL || 'https://api.gptapi.us/v1/chat/completions'
             const apiKey = process.env.AI_API_KEY
+            const model = process.env.AI_MODEL || 'deepseek-chat'
 
             if (!apiKey) {
-                return res.status(500).json({ error: 'AI API 未配置' })
+                return res.status(500).json({ error: 'AI API 未配置 (AI_API_KEY Missing)' })
             }
 
             // 获取现有标签列表
@@ -429,7 +430,7 @@ ${(content || '').substring(0, 500)}
 1. 优先使用现有标签库中的标签
 2. 如果现有标签不合适，可以建议新标签
 3. 标签应该简短、准确、有意义
-4. 只返回标签名称，用逗号分隔，不要有其他任何解释文字
+4. 只返回标签名称，用逗号分隔，不要有任何解释
 
 请返回2-3个标签:`
 
@@ -440,7 +441,7 @@ ${(content || '').substring(0, 500)}
                     'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    model: 'gpt-3.5-turbo',
+                    model: model,
                     messages: [
                         { role: 'user', content: prompt }
                     ],
@@ -452,7 +453,12 @@ ${(content || '').substring(0, 500)}
             if (!response.ok) {
                 const errorData = await response.text()
                 console.error('AI API 错误:', errorData)
-                return res.status(500).json({ error: 'AI 服务暂时不可用' })
+                try {
+                    const jsonError = JSON.parse(errorData)
+                    return res.status(500).json({ error: `AI API Error: ${jsonError.error?.message || errorData}` })
+                } catch {
+                    return res.status(500).json({ error: `AI API Error: ${errorData}` })
+                }
             }
 
             const data = await response.json() as {
@@ -484,5 +490,17 @@ ${(content || '').substring(0, 500)}
             console.error('生成标签失败:', error)
             res.status(500).json({ error: '生成标签失败' })
         }
+    },
+
+    // Debug AI Config
+    async debugAi(req: Request, res: Response) {
+        const apiKey = process.env.AI_API_KEY
+        res.json({
+            hasKey: !!apiKey,
+            keyLength: apiKey ? apiKey.length : 0,
+            model: process.env.AI_MODEL || 'deepseek-chat (default)',
+            url: process.env.AI_API_URL || 'https://api.gptapi.us/v1/chat/completions',
+            envFile: process.env.DOTENV_CONFIG_PATH || 'default'
+        })
     }
 }

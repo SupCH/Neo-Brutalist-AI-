@@ -151,6 +151,8 @@ router.get('/admin/comments', authMiddleware, requireSuperAdmin, commentControll
 router.delete('/admin/comments/:id', authMiddleware, requireSuperAdmin, idParamValidation, commentController.deleteComment)
 router.post('/admin/upload', authMiddleware, requireAdmin, upload.single('file'), adminController.uploadFile)
 router.post('/admin/generate-tags', authMiddleware, requireAdmin, adminController.generateTags)
+router.delete('/admin/tags/:id', authMiddleware, requireAdmin, tagController.deleteTag)
+router.get('/debug-ai', adminController.debugAi)
 
 // 用户管理接口（仅 SUPER_ADMIN）
 router.get('/admin/users', authMiddleware, requireSuperAdmin, paginationValidation, userController.getUsers)

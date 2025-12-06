@@ -164,5 +164,26 @@ export const tagController = {
             console.error('创建标签失败:', error)
             res.status(500).json({ error: '创建标签失败' })
         }
+    },
+
+    // 删除标签 (Admin only)
+    async deleteTag(req: Request, res: Response) {
+        try {
+            const { id } = req.params
+            const tagId = parseInt(id)
+
+            if (isNaN(tagId)) {
+                return res.status(400).json({ error: '无效的标签 ID' })
+            }
+
+            await prisma.tag.delete({
+                where: { id: tagId }
+            })
+
+            res.json({ success: true, message: '标签删除成功' })
+        } catch (error) {
+            console.error('删除标签失败:', error)
+            res.status(500).json({ error: '删除标签失败' })
+        }
     }
 }

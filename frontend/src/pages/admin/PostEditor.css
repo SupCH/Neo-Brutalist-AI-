@@ -1,6 +1,10 @@
-/* Post Editor - Neo-Brutalist Style */
-.post-editor {
-    padding: 0;
+/* Post Editor Container */
+.post-editor-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 140px);
+    /* Adjust for header/padding */
+    min-height: 600px;
 }
 
 /* Draft Prompt */
@@ -136,11 +140,15 @@
     grid-template-columns: 1fr;
     gap: 2rem;
     align-items: start;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
 }
 
 @media (min-width: 900px) {
     .editor-form {
         grid-template-columns: 1fr 320px;
+        overflow: hidden;
     }
 }
 
@@ -149,6 +157,9 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .editor-main .form-group {
@@ -179,8 +190,10 @@
 }
 
 .content-textarea {
-    min-height: 400px;
-    resize: vertical;
+    height: 100% !important;
+    min-height: 0;
+    resize: none;
+    overflow-y: auto;
 }
 
 /* Content Editor with Preview */
@@ -227,7 +240,8 @@
 .content-editor-container {
     display: flex;
     gap: 1rem;
-    min-height: 450px;
+    flex: 1;
+    min-height: 0;
 }
 
 .content-editor-container.edit .editor-pane {
@@ -246,11 +260,13 @@
 .editor-pane {
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .editor-pane .content-textarea {
     flex: 1;
-    min-height: 100%;
+    min-height: 0;
+    height: 100%;
 }
 
 .preview-pane {
@@ -258,6 +274,7 @@
     flex-direction: column;
     border: 4px solid var(--neo-black);
     background-color: #fff;
+    height: 100%;
 }
 
 .preview-label {
@@ -274,7 +291,8 @@
     flex: 1;
     padding: 1rem;
     overflow-y: auto;
-    max-height: 450px;
+    height: 100%;
+    max-height: none;
 }
 
 /* Responsive */
@@ -294,6 +312,9 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
 @media (min-width: 900px) {
@@ -379,6 +400,36 @@
 
 .tag-option:hover {
     background-color: #eee;
+}
+
+.tag-item-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tag-delete-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 16px;
+    height: 16px;
+    background-color: var(--alert-red);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    border: 2px solid var(--neo-black);
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+.tag-item-container:hover .tag-delete-badge {
+    opacity: 1;
 }
 
 .tag-selected {
@@ -637,4 +688,20 @@
 .suggested-tag-btn:hover {
     background-color: #f59e0b;
     color: #fff;
+}
+
+.editor-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 4px solid var(--neo-black);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+}
+
+.footer-status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
