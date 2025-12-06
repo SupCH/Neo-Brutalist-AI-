@@ -70,6 +70,43 @@ export default ComponentName
 
 ---
 
+## 权限模型
+
+### 用户角色
+
+| 角色 | 权限说明 |
+|------|----------|
+| `USER` | 普通用户：管理自己的文章、评论 |
+| `ADMIN` | 管理员：管理所有文章、标签 |
+| `SUPER_ADMIN` | 超级管理员：评论管理、用户管理 |
+
+### API 权限约定
+
+```typescript
+// 路由中间件使用约定
+authMiddleware         // 仅需登录
+requireAdmin           // 需要 ADMIN 或 SUPER_ADMIN
+requireSuperAdmin      // 仅 SUPER_ADMIN
+
+// 资源所有权验证在 Controller 中进行
+const isOwner = post.authorId === userId
+const isAdmin = req.userRole === 'ADMIN' || req.userRole === 'SUPER_ADMIN'
+if (!isOwner && !isAdmin) {
+    return res.status(403).json({ error: '权限不足' })
+}
+```
+
+### 文章权限矩阵
+
+| 操作 | USER (非作者) | USER (作者) | ADMIN |
+|------|--------------|-------------|-------|
+| 查看列表 | ✅ 仅自己 | ✅ 仅自己 | ✅ 全部 |
+| 创建 | ✅ | ✅ | ✅ |
+| 编辑 | ❌ | ✅ | ✅ |
+| 删除 | ❌ | ✅ | ✅ |
+
+---
+
 ## 项目约定
 
 ### 文件命名
@@ -80,11 +117,12 @@ export default ComponentName
 | 样式文件 | 与组件同名 | `PostCard.css` |
 | 工具函数 | camelCase | `formatDate.ts` |
 | 常量文件 | camelCase | `constants.ts` |
+| Controller | camelCase + Controller | `postController.ts` |
 
 ### 目录结构
 
 ```
-src/
+frontend/src/
 ├── components/     # 可复用组件
 ├── pages/          # 页面组件
 │   └── admin/      # 后台管理页面
@@ -92,6 +130,56 @@ src/
 ├── services/       # API 服务
 ├── styles/         # 全局样式
 └── utils/          # 工具函数
+
+backend/src/
+├── controllers/    # 请求处理器
+├── middleware/     # 中间件 (认证、验证)
+├── routes/         # 路由定义
+├── utils/          # 工具函数 (Prisma 客户端等)
+└── index.ts        # Express 入口
+
+backend/prisma/
+├── schema.prisma   # 数据库模型
+├── migrations/     # 迁移文件
+├── seed.ts         # 生产种子数据
+└── seed-demo.ts    # 测试数据生成
+```
+
+---
+
+## API 开发规范
+
+### 新增接口流程
+
+1. **定义 Controller** (`backend/src/controllers/xxxController.ts`)
+2. **注册路由** (`backend/src/routes/index.ts`)
+3. **添加验证** (使用 express-validator)
+4. **更新前端 API** (`frontend/src/services/api.ts`)
+5. **更新文档** (`docs/api.md`)
+
+### 响应格式
+
+```typescript
+// 成功
+res.json({ success: true, data: {...} })
+
+// 错误 (使用 Neo-Brutalist 风格注释前缀)
+res.status(403).json({ error: '// FORBIDDEN: 权限不足' })
+res.status(404).json({ error: '文章不存在' })
+```
+
+### AI 功能降级模式
+
+AI 相关接口 (标签生成、摘要生成) 需实现降级：
+```typescript
+// 1. 优先使用 AI API
+if (apiKey) {
+    // 调用 AI
+}
+// 2. 降级为本地算法
+if (!result) {
+    // 本地关键词提取/文本截取
+}
 ```
 
 ---
@@ -127,3 +215,19 @@ docs: 更新 API 文档
 4. 创建 Pull Request
 5. 代码审查
 6. 合并到主分支
+
+---
+
+## 数据库变更
+
+### 新增字段/模型
+
+1. 修改 `prisma/schema.prisma`
+2. 运行 `npx prisma migrate dev --name <migration_name>`
+3. 更新 seed 脚本（如需要）
+4. 重启后端（Prisma Client 会自动重新生成）
+
+### 注意事项
+
+- 生产环境使用 `npx prisma migrate deploy`
+- 避免在迁移后手动修改数据库
