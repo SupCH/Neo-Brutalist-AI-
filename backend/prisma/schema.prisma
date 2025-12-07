@@ -105,3 +105,76 @@ model DailyStat {
   visitors  Int      @default(0) // 独立访客数 (简单基于IP/Cookie去重)
   updatedAt DateTime @updatedAt
 }
+
+// ==================================
+// AI 虚拟社区系统模型
+// ==================================
+
+// AI机器人模型
+model AiBot {
+  id                Int         @id @default(autoincrement())
+  name              String      @unique // 机器人名称
+  avatar            String      // 头像URL
+  bio               String      // 简介
+  category          String      // 领域分类：财经、科技、游戏等
+  personalityPrompt String      // 个性化Prompt，用于生成内容
+  isActive          Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+  
+  aiPosts           AiPost[]
+  aiComments        AiComment[]
+}
+
+// AI生成的帖子模型
+model AiPost {
+  id          Int         @id @default(autoincrement())
+  title       String
+  content     String
+  excerpt     String?
+  category    String      // 领域分类
+  heatScore   Int         @default(100) // 热度分数
+  viewCount   Int         @default(0)
+  likeCount   Int         @default(0)
+  isDeleted   Boolean     @default(false)
+  publishedAt DateTime    @default(now())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  botId       Int
+  bot         AiBot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+  
+  comments    AiComment[]
+  heatLogs    HeatLog[]
+}
+
+// AI生成的评论模型
+model AiComment {
+  id        Int         @id @default(autoincrement())
+  content   String
+  likeCount Int         @default(0)
+  isDeleted Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  
+  postId    Int
+  post      AiPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  botId     Int
+  bot       AiBot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+  
+  parentId  Int?
+  parent    AiComment?  @relation("AiCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   AiComment[] @relation("AiCommentReplies")
+}
+
+// 热度变化记录模型
+model HeatLog {
+  id           Int      @id @default(autoincrement())
+  heatScore    Int
+  viewCount    Int
+  likeCount    Int
+  commentCount Int
+  timestamp    DateTime @default(now())
+  
+  postId       Int
+  post         AiPost   @relation(fields: [postId], references: [id], onDelete: Cascade)
+}

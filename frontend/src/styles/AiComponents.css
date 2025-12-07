@@ -1,0 +1,298 @@
+/* AI组件通用样式 */
+
+/* AI Bot Card */
+.ai-bot-card {
+    display: block;
+    padding: var(--spacing-md);
+    border: var(--border-thick);
+    background: var(--bg-secondary);
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.ai-bot-card:hover {
+    background: var(--bg-primary);
+    transform: translate(-3px, -3px);
+    box-shadow: 5px 5px 0 var(--neo-black);
+}
+
+.ai-bot-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.ai-bot-card__avatar,
+.ai-bot-card__avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--neo-black);
+    object-fit: cover;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.ai-bot-card__info {
+    flex: 1;
+}
+
+.ai-bot-card__name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: var(--spacing-xs);
+}
+
+.ai-bot-card__category {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid var(--neo-black);
+    color: var(--neo-black);
+    text-transform: uppercase;
+}
+
+.ai-bot-card__bio {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.ai-bot-card__stats {
+    display: flex;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-sm);
+    border-top: 2px solid var(--border-color);
+}
+
+.ai-bot-card__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ai-bot-card__stat-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--neo-green);
+}
+
+.ai-bot-card__stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.ai-bot-card__badge {
+    position: absolute;
+    top: var(--spacing-xs);
+    right: var(--spacing-xs);
+    padding: 4px 8px;
+    background: var(--neo-green);
+    color: var(--neo-black);
+    font-size: 0.7rem;
+    font-weight: 900;
+    border: 2px solid var(--neo-black);
+}
+
+/* AI Post Card */
+.ai-post-card {
+    display: block;
+    padding: var(--spacing-lg);
+    border: var(--border-thick);
+    background: var(--bg-secondary);
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    transition: all 0.2s ease;
+    margin-bottom: var(--spacing-xl);
+}
+
+.ai-post-card::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: calc(-1 * var(--spacing-xl) / 2);
+    transform: translateX(-50%);
+    width: 80%;
+    height: 3px;
+    background: var(--neo-black);
+}
+
+.ai-post-card:last-child {
+    margin-bottom: 0;
+}
+
+.ai-post-card:last-child::after {
+    display: none;
+}
+
+.ai-post-card:hover {
+    background: var(--bg-primary);
+    transform: translate(-3px, -3px);
+    box-shadow: 6px 6px 0 var(--neo-black);
+}
+
+.ai-post-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.ai-post-card__bot {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.ai-post-card__bot-avatar,
+.ai-post-card__bot-avatar-placeholder {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
+    border: 2px solid var(--neo-black);
+    object-fit: cover;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ai-post-card__bot-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.ai-post-card__time {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.ai-post-card__heat {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 2px solid var(--neo-black);
+    font-weight: 800;
+    font-size: 0.9rem;
+}
+
+.ai-post-card__heat--low {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+}
+
+.ai-post-card__heat--medium {
+    background: var(--neo-yellow);
+    color: var(--neo-black);
+}
+
+.ai-post-card__heat--high {
+    background: var(--neo-orange);
+    color: var(--neo-white);
+}
+
+.ai-post-card__heat--extreme {
+    background: var(--neo-pink);
+    color: var(--neo-white);
+    animation: heat-pulse 1.5s infinite;
+}
+
+@keyframes heat-pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.ai-post-card__title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: var(--spacing-sm);
+}
+
+.ai-post-card__excerpt {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ai-post-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--spacing-sm);
+    border-top: 2px solid var(--border-color);
+}
+
+.ai-post-card__stats {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.ai-post-card__stat {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.ai-post-card__category {
+    padding: 4px 8px;
+    background: var(--neo-cyan);
+    color: var(--neo-black);
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 2px solid var(--neo-black);
+    text-transform: uppercase;
+}
+
+.ai-post-card__ai-badge {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    padding: 4px 10px;
+    background: var(--neo-green);
+    color: var(--neo-black);
+    font-size: 0.7rem;
+    font-weight: 900;
+    border: 2px solid var(--neo-black);
+    transform: rotate(3deg);
+}
+
+/* Spinner */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--neo-green);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

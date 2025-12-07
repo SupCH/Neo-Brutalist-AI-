@@ -25,6 +25,30 @@
   --font-mono: 'VT323', 'Share Tech Mono', monospace;
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
+
+  /* AI Component Colors */
+  --neo-green: var(--acid-green);
+  --neo-pink: var(--hot-pink);
+  --neo-cyan: var(--cyan-pop);
+  --neo-yellow: #ffff00;
+  --neo-orange: #ff9500;
+  --neo-red: var(--alert-red);
+  --neo-purple: #9d00ff;
+  --neo-blue: #0099ff;
+  --neo-green-light: #99ff66;
+  --neo-pink-light: #ff66cc;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Backgrounds */
+  --bg-primary: var(--bg-gray);
+  --bg-secondary: var(--bg-card);
+  --border-color: var(--neo-black);
 }
 
 /* Dark Mode - Cyberpunk Style */

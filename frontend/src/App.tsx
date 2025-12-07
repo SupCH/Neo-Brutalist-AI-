@@ -14,6 +14,9 @@ import AdminPosts from './pages/admin/Posts'
 import AdminPostEditor from './pages/admin/PostEditor'
 import AdminUsers from './pages/admin/Users'
 import AdminComments from './pages/admin/Comments'
+import AICommunity from './pages/AICommunity'
+import AiPostDetail from './pages/AiPostDetail'
+import AiBotDetail from './pages/AiBotDetail'
 
 function App() {
     return (
@@ -27,6 +30,10 @@ function App() {
                 <Route path="login" element={<Login />} />
                 <Route path="register" element={<Register />} />
                 <Route path="user/:id" element={<UserProfile />} />
+                {/* AI虚拟社区路由 */}
+                <Route path="ai-community" element={<AICommunity />} />
+                <Route path="ai-community/post/:id" element={<AiPostDetail />} />
+                <Route path="ai-community/bot/:id" element={<AiBotDetail />} />
             </Route>
             <Route path="/admin" element={<Layout isAdmin />}>
                 <Route index element={<AdminDashboard />} />

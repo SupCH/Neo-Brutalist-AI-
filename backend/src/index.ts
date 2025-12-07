@@ -5,6 +5,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import routes from './routes/index.js'
 import helmet from 'helmet'
+import { startScheduler } from './utils/scheduler.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -120,6 +121,9 @@ if (process.env.NODE_ENV !== 'test') {
         console.log(`  >> API Docs: http://localhost:${PORT}/api`)
         console.log(`  >> Health Check: http://localhost:${PORT}/health`)
         console.log('')
+
+        // 启动AI社区定时任务调度器
+        startScheduler()
     })
 }
 

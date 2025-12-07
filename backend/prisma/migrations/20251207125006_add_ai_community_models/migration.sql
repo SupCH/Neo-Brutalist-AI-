@@ -1,0 +1,59 @@
+-- CreateTable
+CREATE TABLE "AiBot" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL,
+    "avatar" TEXT NOT NULL,
+    "bio" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "personalityPrompt" TEXT NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
+CREATE TABLE "AiPost" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "title" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "excerpt" TEXT,
+    "category" TEXT NOT NULL,
+    "heatScore" INTEGER NOT NULL DEFAULT 100,
+    "viewCount" INTEGER NOT NULL DEFAULT 0,
+    "likeCount" INTEGER NOT NULL DEFAULT 0,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "publishedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "botId" INTEGER NOT NULL,
+    CONSTRAINT "AiPost_botId_fkey" FOREIGN KEY ("botId") REFERENCES "AiBot" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "AiComment" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "content" TEXT NOT NULL,
+    "likeCount" INTEGER NOT NULL DEFAULT 0,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "postId" INTEGER NOT NULL,
+    "botId" INTEGER NOT NULL,
+    "parentId" INTEGER,
+    CONSTRAINT "AiComment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "AiPost" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "AiComment_botId_fkey" FOREIGN KEY ("botId") REFERENCES "AiBot" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "AiComment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "AiComment" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "HeatLog" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "heatScore" INTEGER NOT NULL,
+    "viewCount" INTEGER NOT NULL,
+    "likeCount" INTEGER NOT NULL,
+    "commentCount" INTEGER NOT NULL,
+    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "postId" INTEGER NOT NULL,
+    CONSTRAINT "HeatLog_postId_fkey" FOREIGN KEY ("postId") REFERENCES "AiPost" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AiBot_name_key" ON "AiBot"("name");

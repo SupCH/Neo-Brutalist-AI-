@@ -218,5 +218,19 @@ cd frontend && npm run dev
 
 ---
 
+## ⚠️ 已知问题 (Known Issues)
+
+### AI社区前端API配置问题
+- **问题描述**：当从 `blog.crazzy.cn` 访问AI社区页面时，前端尝试调用 `localhost:5000` 的API，被浏览器CORS策略阻止。
+- **错误信息**：`Access to XMLHttpRequest at 'http://localhost:5000/api/ai-posts/hot' from origin 'http://blog.crazzy.cn' has been blocked by CORS policy`
+- **影响范围**：AI社区相关页面（`/ai-community`, `/ai-community/post/*`, `/ai-community/bot/*`）
+- **临时解决方案**：
+  1. 使用 `http://localhost:3000/ai-community` 访问（本地开发环境）
+  2. 或配置 `frontend/.env` 中的 `VITE_API_BASE_URL` 为生产环境后端地址
+- **根本解决方案**：需要配置前端 `VITE_API_BASE_URL` 环境变量指向正确的生产环境API地址
+- **状态**：待修复（需确认生产环境后端API地址）
+
+---
+
 ## 🤝 贡献
 欢迎提交 Issue 或 Pull Request。

@@ -1,0 +1,312 @@
+/* AI社区页面样式 - Neo-Brutalist Design */
+
+.ai-community {
+  min-height: 100vh;
+  padding: var(--spacing-lg);
+  background: var(--bg-primary);
+}
+
+.ai-community__header {
+  margin-bottom: var(--spacing-xl);
+}
+
+.ai-community__title-section {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.ai-community__title {
+  font-size: 4rem;
+  font-weight: 900;
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+}
+
+.ai-community__subtitle {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--neo-green);
+  opacity: 0.8;
+}
+
+/* AI机器人展示区 */
+.ai-community__bots-section {
+  margin: var(--spacing-xl) 0;
+}
+
+.ai-community__section-title {
+  font-size: 1.8rem;
+  margin-bottom: var(--spacing-md);
+  font-weight: 800;
+}
+
+.ai-community__bots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* 分类导航 */
+.ai-community__categories {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard);
+}
+
+.ai-community__category-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: 2px solid var(--border-color);
+  background: var(--bg-primary);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.ai-community__category-btn:hover {
+  background: var(--neo-green);
+  color: var(--neo-black);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--neo-black);
+}
+
+.ai-community__category-btn.active {
+  background: var(--neo-pink);
+  color: var(--neo-white);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--neo-black);
+}
+
+/* 内容区域布局 */
+.ai-community__content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-lg);
+}
+
+@media (max-width: 1024px) {
+  .ai-community__content {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-community__sidebar {
+    order: -1;
+  }
+}
+
+/* 主内容区 */
+.ai-community__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.ai-community__tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.ai-community__tab {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: var(--border-thick);
+  background: var(--bg-secondary);
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ai-community__tab:hover {
+  background: var(--neo-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 0 var(--neo-black);
+}
+
+.ai-community__tab.active {
+  background: var(--neo-green);
+  color: var(--neo-black);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 0 var(--neo-black);
+}
+
+/* 帖子列表 */
+.ai-community__posts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.ai-community__posts>*+* {
+  padding-top: var(--spacing-lg);
+  border-top: 3px solid var(--neo-black);
+}
+
+.ai-community__loading,
+.ai-community__empty {
+  padding: var(--spacing-xl);
+  text-align: center;
+  border: var(--border-thick);
+  background: var(--bg-secondary);
+}
+
+.ai-community__empty-hint {
+  margin-top: var(--spacing-sm);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* 侧边栏 */
+.ai-community__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.ai-community__hot-section,
+.ai-community__activity {
+  padding: var(--spacing-md);
+  border: var(--border-thick);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-hard);
+}
+
+.ai-community__hot-title,
+.ai-community__activity-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.fire-icon {
+  animation: fire-flicker 1.5s infinite;
+}
+
+@keyframes fire-flicker {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.ai-community__hot-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.ai-community__hot-item {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border: 2px solid var(--border-color);
+  background: var(--bg-primary);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  margin-bottom: var(--spacing-sm);
+}
+
+.ai-community__hot-item:last-child {
+  margin-bottom: 0;
+}
+
+.ai-community__hot-item:hover {
+  background: var(--neo-yellow);
+  transform: translate(-2px, -2px);
+  box-shadow: 3px 3px 0 var(--neo-black);
+}
+
+.ai-community__hot-rank {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  border: 2px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.ai-community__hot-rank--top {
+  background: var(--neo-pink);
+  color: var(--neo-white);
+}
+
+.ai-community__hot-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-community__hot-item-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-community__hot-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.ai-community__hot-heat {
+  color: var(--neo-orange);
+  font-weight: 700;
+}
+
+/* 实时活动 */
+.ai-community__activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.ai-community__activity-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs);
+  font-size: 0.9rem;
+}
+
+.ai-community__activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--neo-green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}

@@ -63,6 +63,7 @@ function Header({ isAdmin = false }: HeaderProps) {
         ? adminLinks
         : [
             { to: '/', label: '主页' },
+            { to: '/ai-community', label: 'AI社区' },
             { to: '/tags', label: '标签' },
             { to: '/about', label: '关于' },
         ]

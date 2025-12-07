@@ -104,7 +104,17 @@ async function handleOption(option) {
             await runCommand('npm', ['run', 'build'], frontendDir, 'Frontend Build');
             console.log(colors.cyan + "\n  [2/3] 启动后端..." + colors.reset);
             openTerminal('npm run dev', backendDir, 'Blog Backend Production');
-            console.log(colors.green + "\n  [3/3] 服务已启动！访问 http://localhost:5000" + colors.reset);
+            console.log(colors.green + "\n  [3/3] 服务已启动！" + colors.reset);
+            console.log(colors.cyan + "  >>> 正在打开浏览器..." + colors.reset);
+            // 延迟3秒后打开浏览器，确保服务已启动
+            setTimeout(() => {
+                try {
+                    execSync('start https://blog.crazzy.cn', { stdio: 'ignore' });
+                    console.log(colors.green + "  >>> 已打开 https://blog.crazzy.cn" + colors.reset);
+                } catch (e) {
+                    console.log(colors.yellow + "  >>> 无法自动打开浏览器，请手动访问 https://blog.crazzy.cn" + colors.reset);
+                }
+            }, 3000);
             break;
 
         case '2': // 开发模式

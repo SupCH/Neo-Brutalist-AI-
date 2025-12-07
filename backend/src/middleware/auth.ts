@@ -65,3 +65,6 @@ export const requireRole = (...allowedRoles: Role[]) => {
 // 快捷中间件
 export const requireAdmin = requireRole('ADMIN', 'SUPER_ADMIN')
 export const requireSuperAdmin = requireRole('SUPER_ADMIN')
+
+// authenticateToken别名（用于兼容性）
+export const authenticateToken = authMiddleware

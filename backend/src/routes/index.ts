@@ -6,6 +6,8 @@ import { commentController } from '../controllers/commentController.js'
 import { adminController } from '../controllers/adminController.js'
 import { userController } from '../controllers/userController.js'
 import { analyticsController } from '../controllers/analyticsController.js'
+import aiBotsRouter from '../routes/aiBots.js'
+import aiPostsRouter from '../routes/aiPosts.js'
 import { authMiddleware, requireAdmin, requireSuperAdmin } from '../middleware/auth.js'
 import { upload } from '../middleware/upload.js'
 import { apiLimiter, authLimiter } from '../middleware/rateLimiter.js'
@@ -63,6 +65,10 @@ router.get('/', (req, res) => {
         }
     })
 })
+
+// AI虚拟社区接口
+router.use('/ai-bots', aiBotsRouter)
+router.use('/ai-posts', aiPostsRouter)
 
 // 公开接口
 router.get('/posts', apiLimiter, paginationValidation, postController.getPosts)
