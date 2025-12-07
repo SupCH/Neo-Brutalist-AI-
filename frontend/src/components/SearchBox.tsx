@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './SearchBox.css'
 
@@ -8,6 +8,32 @@ interface SearchResult {
     slug: string
     excerpt: string | null
     tags: { id: number; name: string; slug: string }[]
+    matchType: 'title' | 'tag' | 'content'
+    matchSnippet: string
+    matchKeyword: string
+}
+
+// 高亮关键词工具函数
+function highlightKeyword(text: string, keyword: string): React.ReactNode {
+    if (!keyword.trim() || !text) return text
+
+    const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+    const parts = text.split(regex)
+
+    return parts.map((part, index) =>
+        regex.test(part) ? (
+            <mark key={index} className="highlight-keyword">{part}</mark>
+        ) : (
+            part
+        )
+    )
+}
+
+// 匹配类型标签文案
+const matchTypeLabels: Record<string, string> = {
+    title: '标题',
+    tag: '标签',
+    content: '内容'
 }
 
 function SearchBox() {
@@ -15,14 +41,17 @@ function SearchBox() {
     const [results, setResults] = useState<SearchResult[]>([])
     const [isOpen, setIsOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [selectedIndex, setSelectedIndex] = useState(-1)
     const searchRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
+    const resultsRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
 
     // 搜索防抖
     useEffect(() => {
         if (!query.trim()) {
             setResults([])
+            setSelectedIndex(-1)
             return
         }
 
@@ -32,6 +61,7 @@ function SearchBox() {
                 const res = await fetch(`/api/posts/search?q=${encodeURIComponent(query)}`)
                 const data = await res.json()
                 setResults(data)
+                setSelectedIndex(-1)
             } catch (error) {
                 console.error('搜索失败:', error)
             }
@@ -52,6 +82,16 @@ function SearchBox() {
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
+    // 滚动选中项到可视区域
+    const scrollToSelected = useCallback((index: number) => {
+        if (resultsRef.current && index >= 0) {
+            const items = resultsRef.current.querySelectorAll('.search-result-item')
+            if (items[index]) {
+                items[index].scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+            }
+        }
+    }, [])
+
     // 键盘快捷键
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -65,15 +105,37 @@ function SearchBox() {
             if (e.key === 'Escape') {
                 setIsOpen(false)
                 setQuery('')
+                setSelectedIndex(-1)
+            }
+
+            // 搜索框打开时的导航快捷键
+            if (isOpen && results.length > 0) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault()
+                    const newIndex = selectedIndex < results.length - 1 ? selectedIndex + 1 : 0
+                    setSelectedIndex(newIndex)
+                    scrollToSelected(newIndex)
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault()
+                    const newIndex = selectedIndex > 0 ? selectedIndex - 1 : results.length - 1
+                    setSelectedIndex(newIndex)
+                    scrollToSelected(newIndex)
+                }
+                if (e.key === 'Enter' && selectedIndex >= 0) {
+                    e.preventDefault()
+                    handleResultClick(results[selectedIndex].slug)
+                }
             }
         }
         document.addEventListener('keydown', handleKeyDown)
         return () => document.removeEventListener('keydown', handleKeyDown)
-    }, [])
+    }, [isOpen, results, selectedIndex, scrollToSelected])
 
     const handleResultClick = (slug: string) => {
         setIsOpen(false)
         setQuery('')
+        setSelectedIndex(-1)
         navigate(`/post/${slug}`)
     }
 
@@ -113,7 +175,7 @@ function SearchBox() {
                         </button>
                     </div>
 
-                    <div className="search-results">
+                    <div className="search-results" ref={resultsRef}>
                         {loading && (
                             <div className="search-loading">// 搜索中...</div>
                         )}
@@ -122,20 +184,32 @@ function SearchBox() {
                             <div className="search-empty">// 未找到相关文章</div>
                         )}
 
-                        {!loading && results.map((result) => (
+                        {!loading && results.map((result, index) => (
                             <div
                                 key={result.id}
-                                className="search-result-item"
+                                className={`search-result-item ${index === selectedIndex ? 'selected' : ''}`}
                                 onClick={() => handleResultClick(result.slug)}
+                                onMouseEnter={() => setSelectedIndex(index)}
                             >
-                                <h4 className="result-title">{result.title}</h4>
-                                {result.excerpt && (
-                                    <p className="result-excerpt">{result.excerpt.slice(0, 80)}...</p>
+                                <div className="result-header">
+                                    <span className={`match-type-badge match-type-${result.matchType}`}>
+                                        {matchTypeLabels[result.matchType]}
+                                    </span>
+                                </div>
+                                <h4 className="result-title">
+                                    {highlightKeyword(result.title, result.matchKeyword)}
+                                </h4>
+                                {result.matchSnippet && (
+                                    <p className="result-excerpt">
+                                        {highlightKeyword(result.matchSnippet.slice(0, 120), result.matchKeyword)}
+                                    </p>
                                 )}
                                 {result.tags.length > 0 && (
                                     <div className="result-tags">
                                         {result.tags.slice(0, 3).map(tag => (
-                                            <span key={tag.id} className="result-tag">#{tag.name}</span>
+                                            <span key={tag.id} className="result-tag">
+                                                #{highlightKeyword(tag.name, result.matchKeyword)}
+                                            </span>
                                         ))}
                                     </div>
                                 )}
@@ -145,7 +219,12 @@ function SearchBox() {
                         {!query && (
                             <div className="search-hint">
                                 <p>// 输入关键词搜索文章</p>
-                                <p className="hint-tip">提示：支持搜索标题和内容</p>
+                                <p className="hint-tip">提示：支持搜索标题、内容和标签</p>
+                                <div className="hint-shortcuts">
+                                    <span><kbd>↑</kbd><kbd>↓</kbd> 选择</span>
+                                    <span><kbd>Enter</kbd> 跳转</span>
+                                    <span><kbd>ESC</kbd> 关闭</span>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -156,3 +235,4 @@ function SearchBox() {
 }
 
 export default SearchBox
+

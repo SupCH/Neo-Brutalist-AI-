@@ -1,6 +1,6 @@
 # SupCH 风格个人博客 (Neo-Brutalist Blog)
 
-![Version](https://img.shields.io/badge/版本-1.0.9-blue?style=flat-square)
+![Version](https://img.shields.io/badge/版本-1.1.0-blue?style=flat-square)
 ![GitHub last commit](https://img.shields.io/github/last-commit/SupCH/Neo-Brutalist-AI-?style=flat-square&label=最近提交)
 ![GitHub repo size](https://img.shields.io/github/repo-size/SupCH/Neo-Brutalist-AI-?style=flat-square&label=仓库大小)
 
@@ -12,7 +12,7 @@
 
 这是一个基于 **React** 和 **Node.js** 全栈开发的个人博客系统，采用独特的 **Neo-Brutalist (新野蛮主义)** 设计风格。项目集成了完整的用户认证、内容管理、评论互动及后台管理功能，并针对生产环境部署进行了深度优化。
 
-当前版本：`v1.0.9`
+当前版本：`v1.1.0`
 
 ## ✨ 核心功能特性
 
@@ -109,6 +109,15 @@ cd frontend && npm run dev
 ---
 
 ## 📄 更新日志
+
+### v1.1.0 (2025-12-07)
+- **全文搜索增强**：
+  - **关键词高亮**：搜索结果中匹配的关键词以黄色背景突出显示，并显示匹配上下文。
+  - **键盘导航**：支持使用 `↑` `↓` 键选择结果，`Enter` 键跳转，提升操作效率。
+  - **智能匹配**：
+    - 支持按**标签名**搜索文章。
+    - 引入**相关度排序**：标题匹配 > 标签匹配 > 内容匹配。
+  - **UI 优化**：新增匹配类型徽章（标题/内容/标签），结果列表布局更清晰。
 
 ### v1.0.9 (2025-12-07)
 - **核心重构**：

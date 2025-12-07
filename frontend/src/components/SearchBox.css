@@ -159,6 +159,75 @@
     color: var(--hot-pink);
 }
 
+/* Keyword Highlighting */
+.highlight-keyword {
+    background-color: #fef08a;
+    color: var(--neo-black);
+    font-weight: 700;
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+/* Match Type Badges */
+.result-header {
+    margin-bottom: 0.5rem;
+}
+
+.match-type-badge {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 0.125rem 0.375rem;
+    border: 2px solid var(--neo-black);
+    text-transform: uppercase;
+}
+
+.match-type-title {
+    background-color: var(--acid-green);
+    color: var(--neo-black);
+}
+
+.match-type-tag {
+    background-color: var(--hot-pink);
+    color: #fff;
+}
+
+.match-type-content {
+    background-color: #e5e5e5;
+    color: var(--neo-black);
+}
+
+/* Keyboard Selected State */
+.search-result-item.selected {
+    background-color: var(--acid-green);
+    border-left: 4px solid var(--neo-black);
+}
+
+.search-result-item.selected .result-title {
+    color: var(--neo-black);
+}
+
+/* Keyboard Shortcuts Hint */
+.hint-shortcuts {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.hint-shortcuts kbd {
+    display: inline-block;
+    padding: 0.125rem 0.375rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    background-color: var(--neo-black);
+    color: #fff;
+    border-radius: 2px;
+    margin: 0 0.125rem;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
     .search-shortcut {
@@ -168,5 +237,10 @@
     .search-modal {
         top: 60px;
         width: 95%;
+    }
+
+    .hint-shortcuts {
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
 }

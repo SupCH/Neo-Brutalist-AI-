@@ -40,23 +40,27 @@ export const postController = {
         }
     },
 
-    // 搜索文章
+    // 搜索文章（增强版：支持高亮、匹配类型、标签搜索）
     async searchPosts(req: Request, res: Response) {
         try {
             const query = (req.query.q as string) || ''
+            const searchTerm = query.trim().toLowerCase()
 
-            if (!query.trim()) {
+            if (!searchTerm) {
                 return res.json([])
             }
 
+            // 搜索文章（标题、内容、摘要）和标签
             const posts = await prisma.post.findMany({
                 where: {
                     published: true,
                     isPublic: true,
+                    isDeleted: false,
                     OR: [
                         { title: { contains: query } },
                         { content: { contains: query } },
-                        { excerpt: { contains: query } }
+                        { excerpt: { contains: query } },
+                        { tags: { some: { name: { contains: query } } } }
                     ]
                 },
                 include: {
@@ -65,11 +69,65 @@ export const postController = {
                     },
                     tags: true,
                 },
-                orderBy: { createdAt: 'desc' },
-                take: 10,
+                take: 20, // 取更多结果用于排序后截取
             })
 
-            res.json(posts)
+            // 提取匹配片段的辅助函数
+            const extractSnippet = (text: string, keyword: string, contextLength: number = 50): string | null => {
+                const lowerText = text.toLowerCase()
+                const lowerKeyword = keyword.toLowerCase()
+                const index = lowerText.indexOf(lowerKeyword)
+
+                if (index === -1) return null
+
+                const start = Math.max(0, index - contextLength)
+                const end = Math.min(text.length, index + keyword.length + contextLength)
+
+                let snippet = text.slice(start, end)
+                if (start > 0) snippet = '...' + snippet
+                if (end < text.length) snippet = snippet + '...'
+
+                return snippet
+            }
+
+            // 处理每篇文章，添加匹配信息
+            const enrichedPosts = posts.map(post => {
+                let matchType: 'title' | 'tag' | 'content' = 'content'
+                let matchSnippet: string | null = null
+
+                // 判断匹配类型（优先级：标题 > 标签 > 内容）
+                if (post.title.toLowerCase().includes(searchTerm)) {
+                    matchType = 'title'
+                    matchSnippet = post.title
+                } else if (post.tags.some(tag => tag.name.toLowerCase().includes(searchTerm))) {
+                    matchType = 'tag'
+                    const matchedTag = post.tags.find(tag => tag.name.toLowerCase().includes(searchTerm))
+                    matchSnippet = matchedTag ? `标签：${matchedTag.name}` : null
+                } else {
+                    // 从内容中提取匹配片段
+                    matchSnippet = extractSnippet(post.content, query) ||
+                        (post.excerpt ? extractSnippet(post.excerpt, query) : null)
+                }
+
+                return {
+                    id: post.id,
+                    title: post.title,
+                    slug: post.slug,
+                    excerpt: post.excerpt,
+                    author: post.author,
+                    tags: post.tags,
+                    matchType,
+                    matchSnippet: matchSnippet || post.excerpt?.slice(0, 100) || '',
+                    matchKeyword: query
+                }
+            })
+
+            // 按相关度排序：标题匹配 > 标签匹配 > 内容匹配
+            const sortOrder = { title: 0, tag: 1, content: 2 }
+            enrichedPosts.sort((a, b) => sortOrder[a.matchType] - sortOrder[b.matchType])
+
+            // 返回前 10 条
+            res.json(enrichedPosts.slice(0, 10))
         } catch (error) {
             console.error('搜索文章失败:', error)
             res.status(500).json({ error: '搜索文章失败' })

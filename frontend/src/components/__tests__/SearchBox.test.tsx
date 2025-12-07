@@ -15,10 +15,33 @@ describe('SearchBox', () => {
         return render(<BrowserRouter>{component}</BrowserRouter>)
     }
 
+    // Mock result matching new API format
+    const getMockResults = (keyword: string = 'test') => [
+        {
+            id: 1,
+            title: 'Test Post',
+            slug: 'test-post',
+            excerpt: 'Test excerpt',
+            tags: [{ id: 1, name: 'React', slug: 'react' }],
+            matchType: 'title',
+            matchSnippet: 'This is a Test Post about testing',
+            matchKeyword: keyword
+        },
+        {
+            id: 2,
+            title: 'Another Post',
+            slug: 'another-post',
+            excerpt: 'Another excerpt',
+            tags: [],
+            matchType: 'content',
+            matchSnippet: '...content contains test keyword...',
+            matchKeyword: keyword
+        }
+    ]
+
     it('renders search button initially', () => {
         renderWithRouter(<SearchBox />)
         expect(screen.getByRole('button')).toBeInTheDocument()
-        // Check for search icon/text (e.g. shortcut hint)
         expect(screen.getByText('Ctrl+K')).toBeInTheDocument()
     })
 
@@ -29,33 +52,75 @@ describe('SearchBox', () => {
         expect(screen.getByPlaceholderText('搜索文章...')).toBeInTheDocument()
     })
 
-    it('searches and displays results', async () => {
+    it('searches and displays results with match type badges', async () => {
         renderWithRouter(<SearchBox />)
-
-        // Open search
         fireEvent.click(screen.getByRole('button'))
-
         const input = screen.getByPlaceholderText('搜索文章...')
 
-        // Mock API response
-        const mockResults = [
-            { id: 1, title: 'Test Post', slug: 'test-post', excerpt: 'Test excerpt', tags: [] }
-        ]
-
             ; (global.fetch as any).mockResolvedValueOnce({
-                json: async () => mockResults
+                json: async () => getMockResults()
             })
 
-        // Type query
         fireEvent.change(input, { target: { value: 'test' } })
 
-        // Wait for debounce and fetch
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/posts/search?q=test'))
         })
 
-        // Verify results displayed
-        expect(await screen.findByText('Test Post')).toBeInTheDocument()
+        // Wait for results - check for title containing the text (may be split by highlighting)
+        await waitFor(() => {
+            const resultItems = document.querySelectorAll('.search-result-item')
+            expect(resultItems.length).toBeGreaterThan(0)
+        })
+        // Verify match type badge displayed
+        expect(await screen.findByText('标题')).toBeInTheDocument()
+        expect(await screen.findByText('内容')).toBeInTheDocument()
+    })
+
+    it('highlights keywords in results', async () => {
+        renderWithRouter(<SearchBox />)
+        fireEvent.click(screen.getByRole('button'))
+        const input = screen.getByPlaceholderText('搜索文章...')
+
+            ; (global.fetch as any).mockResolvedValueOnce({
+                json: async () => getMockResults('Test')
+            })
+
+        fireEvent.change(input, { target: { value: 'Test' } })
+
+        // Wait for results to render and check for highlight marks
+        await waitFor(() => {
+            const marks = document.querySelectorAll('.highlight-keyword')
+            expect(marks.length).toBeGreaterThan(0)
+        })
+    })
+
+    it('supports keyboard navigation', async () => {
+        renderWithRouter(<SearchBox />)
+        fireEvent.click(screen.getByRole('button'))
+        const input = screen.getByPlaceholderText('搜索文章...')
+
+            ; (global.fetch as any).mockResolvedValueOnce({
+                json: async () => getMockResults()
+            })
+
+        fireEvent.change(input, { target: { value: 'test' } })
+
+        // Wait for results to render
+        await waitFor(() => {
+            const resultItems = document.querySelectorAll('.search-result-item')
+            expect(resultItems.length).toBeGreaterThan(0)
+        })
+
+        // Press ArrowDown to select first result
+        fireEvent.keyDown(document, { key: 'ArrowDown' })
+        const selectedItems = document.querySelectorAll('.search-result-item.selected')
+        expect(selectedItems.length).toBe(1)
+
+        // Press ArrowDown again to select second result
+        fireEvent.keyDown(document, { key: 'ArrowDown' })
+        const secondSelected = document.querySelectorAll('.search-result-item.selected')
+        expect(secondSelected.length).toBe(1)
     })
 
     it('shows empty state when no results found', async () => {
@@ -75,4 +140,14 @@ describe('SearchBox', () => {
 
         expect(await screen.findByText('// 未找到相关文章')).toBeInTheDocument()
     })
+
+    it('shows keyboard shortcuts hint when no query', () => {
+        renderWithRouter(<SearchBox />)
+        fireEvent.click(screen.getByRole('button'))
+
+        expect(screen.getByText('提示：支持搜索标题、内容和标签')).toBeInTheDocument()
+        expect(screen.getByText('选择')).toBeInTheDocument()
+        expect(screen.getByText('跳转')).toBeInTheDocument()
+    })
 })
+
