@@ -2,6 +2,8 @@ import { Outlet } from 'react-router-dom'
 import { useEffect, useRef } from 'react'
 import Header from './Header'
 import Footer from './Footer'
+import KonamiEffect from './KonamiEffect'
+import ScrollProgressBar from './ScrollProgressBar'
 import './Layout.css'
 
 interface LayoutProps {
@@ -67,6 +69,12 @@ function Layout({ isAdmin = false }: LayoutProps) {
             {/* Custom Cursor */}
             <div className="cursor-dot" ref={cursorDotRef}></div>
             <div className="cursor-outline" ref={cursorOutlineRef}></div>
+
+            {/* Konami Code Easter Egg */}
+            <KonamiEffect />
+
+            {/* Scroll Progress Bar */}
+            <ScrollProgressBar />
 
             {/* Marquee Banner */}
             <div className="marquee-banner">

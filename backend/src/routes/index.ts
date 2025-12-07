@@ -76,6 +76,7 @@ router.get('/users/:id', apiLimiter, idParamValidation, userController.getUserPr
 router.post('/comments', apiLimiter, createCommentValidation, commentController.createComment)
 router.delete('/comments/:id', authMiddleware, commentController.deleteOwnComment)
 router.post('/analytics/view', apiLimiter, analyticsController.recordView)
+router.get('/analytics/recent-views', apiLimiter, analyticsController.getRecentViews)
 
 // IP 检测接口
 router.get('/ip', apiLimiter, async (req, res) => {
@@ -93,10 +94,18 @@ router.get('/ip', apiLimiter, async (req, res) => {
         }
 
         // 本地开发环境处理
-        if (clientIp === '::1' || clientIp === '127.0.0.1' || clientIp === 'localhost') {
+        // 本地开发环境处理
+        // 包含: IPv4 localhost, IPv6 localhost (::1), Link-local IPv6 (fe80::)
+        const isLocal =
+            clientIp === '127.0.0.1' ||
+            clientIp === 'localhost' ||
+            clientIp === '::1' ||
+            clientIp?.toLowerCase().startsWith('fe80::')
+
+        if (isLocal) {
             return res.json({
-                ip: clientIp,
-                location: '本地开发环境'
+                ip: clientIp || '127.0.0.1',
+                location: clientIp?.includes(':') ? '本地开发环境 (IPv6)' : '本地开发环境 (IPv4)'
             })
         }
 

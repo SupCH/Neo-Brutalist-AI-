@@ -1,6 +1,14 @@
 import { Request, Response } from 'express'
 import prisma from '../utils/prisma.js'
 
+// 内存中存储最近阅读记录 (最多 20 条)
+interface ViewEvent {
+    title: string;
+    timestamp: string;
+    id: number;
+}
+const recentViews: ViewEvent[] = [];
+
 export const analyticsController = {
     // 记录访问量
     async recordView(req: Request, res: Response) {
@@ -14,10 +22,29 @@ export const analyticsController = {
             }
 
             // 1. 更新文章阅读量
-            await prisma.post.update({
+            // 同时获取文章标题用于显示
+            const post = await prisma.post.update({
                 where: { id: postId },
-                data: { views: { increment: 1 } }
+                data: { views: { increment: 1 } },
+                select: { id: true, title: true }
             })
+
+            // 记录到内存队列
+            if (post) {
+                const newView: ViewEvent = {
+                    title: post.title,
+                    timestamp: new Date().toISOString(),
+                    id: post.id
+                }
+
+                // 添加到开头
+                recentViews.unshift(newView)
+
+                // 保持最大长度
+                if (recentViews.length > 20) {
+                    recentViews.pop()
+                }
+            }
 
             // 2. 更新每日统计
             const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
@@ -40,6 +67,16 @@ export const analyticsController = {
             console.error('记录访问量失败:', error)
             // 不返回500，以免影响前端页面加载，只记录日志
             res.json({ success: false })
+        }
+    },
+
+    // 获取最近阅读记录
+    async getRecentViews(req: Request, res: Response) {
+        try {
+            res.json(recentViews)
+        } catch (error) {
+            console.error('获取最近阅读记录失败:', error)
+            res.status(500).json({ error: '获取记录失败' })
         }
     },
 

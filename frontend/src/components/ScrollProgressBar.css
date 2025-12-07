@@ -1,0 +1,177 @@
+/* Scroll Progress Bar - Neo-Brutalist Glowing Edge */
+
+/* 顶部进度条容器 */
+.scroll-progress-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 9998;
+    overflow: visible;
+}
+
+/* 进度条本体 */
+.scroll-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg,
+            #ff6b6b 0%,
+            #ffe66d 25%,
+            #4ecdc4 50%,
+            #a8d8ea 75%,
+            #ff6b6b 100%);
+    background-size: 200% 100%;
+    transform-origin: left;
+    transition: transform 0.1s ease-out;
+    animation: gradientShift 3s linear infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 200% 50%;
+    }
+}
+
+/* 进度条头部发光点 */
+.scroll-progress-glow {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, #fff 0%, #4ecdc4 40%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(2px);
+    transition: left 0.1s ease-out, opacity 0.3s;
+}
+
+/* 右侧边缘发光容器 */
+.scroll-edge-glow {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 100vh;
+    z-index: 9997;
+    pointer-events: none;
+    background: linear-gradient(to bottom,
+            rgba(78, 205, 196, 0.1) 0%,
+            transparent 100%);
+}
+
+/* 边缘轨迹 */
+.scroll-edge-trail {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    background: linear-gradient(to bottom,
+            rgba(255, 107, 107, 0.6) 0%,
+            rgba(255, 230, 109, 0.6) 33%,
+            rgba(78, 205, 196, 0.8) 66%,
+            rgba(168, 216, 234, 1) 100%);
+    transition: height 0.1s ease-out;
+    box-shadow:
+        0 0 10px rgba(78, 205, 196, 0.5),
+        0 0 20px rgba(78, 205, 196, 0.3),
+        -2px 0 15px rgba(78, 205, 196, 0.4);
+}
+
+/* 边缘指示点 */
+.scroll-edge-indicator {
+    position: absolute;
+    right: 0;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border: 3px solid #4ecdc4;
+    border-radius: 50%;
+    transition: top 0.1s ease-out;
+    box-shadow:
+        0 0 10px #4ecdc4,
+        0 0 20px #4ecdc4,
+        0 0 30px rgba(78, 205, 196, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 10px #4ecdc4,
+            0 0 20px #4ecdc4,
+            0 0 30px rgba(78, 205, 196, 0.5);
+    }
+
+    50% {
+        box-shadow:
+            0 0 15px #ff6b6b,
+            0 0 30px #ffe66d,
+            0 0 45px rgba(255, 107, 107, 0.6);
+    }
+}
+
+/* 进度百分比显示 */
+.scroll-progress-percent {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #000;
+    color: #4ecdc4;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border: 3px solid #4ecdc4;
+    box-shadow:
+        4px 4px 0 #ff6b6b,
+        0 0 15px rgba(78, 205, 196, 0.3);
+    z-index: 9996;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 响应式：移动端隐藏右侧边缘效果和百分比 */
+@media (max-width: 768px) {
+    .scroll-edge-glow {
+        display: none;
+    }
+
+    .scroll-progress-percent {
+        display: none;
+    }
+
+    .scroll-progress-container {
+        height: 3px;
+    }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+    .scroll-progress-bar {
+        background: #fff;
+    }
+
+    .scroll-edge-trail {
+        background: #fff;
+    }
+}

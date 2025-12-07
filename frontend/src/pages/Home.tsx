@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import PostCard, { Post } from '../components/PostCard'
 import { getPosts, getRandomPost } from '../services/api'
+import RecentReads from '../components/RecentReads'
 import './Home.css'
 
 // 多国语言的"你好"
@@ -81,6 +82,8 @@ function Home() {
 
     return (
         <div className="home">
+            <RecentReads />
+
             {/* Hero Section */}
             <section className="hero">
                 <div className="hero-main">

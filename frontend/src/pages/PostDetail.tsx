@@ -9,6 +9,7 @@ import { getPost, createComment, isAuthenticated, deleteOwnComment, getCurrentUs
 import NotFound from './NotFound'
 import TableOfContents from '../components/TableOfContents'
 import Skeleton from '../components/Skeleton'
+import TypewriterText from '../components/TypewriterText'
 import './PostDetail.css'
 
 interface PostDetailData {
@@ -430,7 +431,14 @@ function PostDetail() {
                         ))}
                     </div>
 
-                    <h1 className="post-title">{post.title}</h1>
+                    <h1 className="post-title">
+                        <TypewriterText
+                            text={post.title}
+                            speed={40}
+                            delay={200}
+                            cursor={true}
+                        />
+                    </h1>
 
                     <div className="post-meta">
                         {post.author ? (

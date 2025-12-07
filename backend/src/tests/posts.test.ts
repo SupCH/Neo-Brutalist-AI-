@@ -14,7 +14,8 @@ describe('Post API', () => {
     it('should return posts list', async () => {
         const res = await request(app).get('/api/posts')
         expect(res.statusCode).toBe(200)
-        expect(Array.isArray(res.body)).toBe(true)
+        expect(Array.isArray(res.body.data)).toBe(true)
+        expect(res.body.meta).toBeDefined()
     })
 
     it('should create a new post via admin endpoint', async () => {

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
+import BreakoutGame from '../components/BreakoutGame'
 import './NotFound.css'
 
 function NotFound() {
@@ -145,6 +146,9 @@ function NotFound() {
                         返回上页
                     </button>
                 </div>
+
+                {/* Breakout Game Easter Egg */}
+                <BreakoutGame />
 
                 {/* 彩蛋提示 */}
                 <p className="easter-egg">

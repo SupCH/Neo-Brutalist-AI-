@@ -1,0 +1,155 @@
+/* Typewriter Text Effect Styles */
+
+.typewriter-text {
+    display: inline;
+}
+
+/* 光标样式 */
+.typewriter-cursor {
+    display: inline-block;
+    margin-left: 2px;
+    font-weight: 400;
+    color: #4ecdc4;
+    text-shadow: 0 0 10px #4ecdc4;
+}
+
+/* 打字中的光标 - 不闪烁 */
+.typewriter-cursor.typing {
+    animation: none;
+    opacity: 1;
+}
+
+/* 完成后的光标 - 闪烁 */
+.typewriter-cursor.blinking {
+    animation: cursorBlink 0.6s ease-in-out infinite;
+}
+
+@keyframes cursorBlink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+/* 特殊效果：标题打字机 */
+.typewriter-title {
+    display: block;
+}
+
+.typewriter-title .typewriter-cursor {
+    font-size: 0.9em;
+    color: #ff6b6b;
+    text-shadow:
+        0 0 10px #ff6b6b,
+        0 0 20px rgba(255, 107, 107, 0.5);
+}
+
+/* 带有下划线效果的打字机 */
+.typewriter-underline {
+    position: relative;
+}
+
+.typewriter-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #ff6b6b, #ffe66d, #4ecdc4);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: underlineGrow 0.5s ease-out forwards;
+    animation-delay: var(--typewriter-duration, 2s);
+}
+
+@keyframes underlineGrow {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+}
+
+/* Glitch 效果变体 */
+.typewriter-glitch {
+    position: relative;
+}
+
+.typewriter-glitch::before,
+.typewriter-glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+}
+
+.typewriter-glitch.complete::before {
+    animation: glitch1 0.3s ease infinite;
+    color: #ff6b6b;
+    clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+    opacity: 0.8;
+}
+
+.typewriter-glitch.complete::after {
+    animation: glitch2 0.3s ease infinite;
+    color: #4ecdc4;
+    clip-path: polygon(0 66%, 100% 66%, 100% 100%, 0 100%);
+    opacity: 0.8;
+}
+
+@keyframes glitch1 {
+
+    0%,
+    100% {
+        transform: translate(0);
+    }
+
+    20% {
+        transform: translate(-2px, 2px);
+    }
+
+    40% {
+        transform: translate(2px, -2px);
+    }
+
+    60% {
+        transform: translate(-2px, -2px);
+    }
+
+    80% {
+        transform: translate(2px, 2px);
+    }
+}
+
+@keyframes glitch2 {
+
+    0%,
+    100% {
+        transform: translate(0);
+    }
+
+    20% {
+        transform: translate(2px, -2px);
+    }
+
+    40% {
+        transform: translate(-2px, 2px);
+    }
+
+    60% {
+        transform: translate(2px, 2px);
+    }
+
+    80% {
+        transform: translate(-2px, -2px);
+    }
+}
